@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ThemeProvider } from "@/hooks/theme-context";
 import { UserProvider } from "@/hooks/user-context";
 import { LanguageProvider } from "@/hooks/language-context";
-import { PaymentProvider } from "@/services/payment-service";
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -83,17 +83,15 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <PaymentProvider>
-        <LanguageProvider>
-          <ThemeProvider>
-            <UserProvider>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <RootLayoutNav />
-              </GestureHandlerRootView>
-            </UserProvider>
-          </ThemeProvider>
-        </LanguageProvider>
-      </PaymentProvider>
+      <LanguageProvider>
+        <ThemeProvider>
+          <UserProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <RootLayoutNav />
+            </GestureHandlerRootView>
+          </UserProvider>
+        </ThemeProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

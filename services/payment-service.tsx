@@ -2,24 +2,14 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { Payment, Subscription } from '@/types';
 
-// Create a mock hook for web
-const mockUseStripe = () => null;
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_51Rb3BrH2HsUSSb9aOjIMa2Oqzxw9oozLShfcsrvzxAGmp6uFzsRC3Jl1fMhXm8C4EZJIjFn2oGLbK51KI9q8tCdQ00c9sFlYQ7';
 
-// Platform-specific imports
-let StripeProvider: any = ({ children }: { children: React.ReactNode }) => <>{children}</>;
-let useStripe: any = mockUseStripe;
-
-if (Platform.OS !== 'web') {
-  try {
-    const stripeRN = require('@stripe/stripe-react-native');
-    StripeProvider = stripeRN.StripeProvider;
-    useStripe = stripeRN.useStripe;
-  } catch (error) {
-    console.warn('Stripe React Native not available:', error);
+// Declare global Stripe type for web
+declare global {
+  interface Window {
+    Stripe?: any;
   }
 }
-
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_51234567890abcdef'; // Replace with your actual key
 
 export interface PaymentService {
   initializePayment: (amount: number, currency: string, description: string) => Promise<string>;
@@ -34,7 +24,7 @@ export interface PaymentService {
 
 class StripePaymentService implements PaymentService {
   private baseUrl = 'https://api.stripe.com/v1';
-  private secretKey = 'sk_test_51234567890abcdef'; // Replace with your actual secret key
+  private secretKey = 'sk_test_51Rb3BrH2HsUSSb9a4sup24BA0PnUmlvKIYGkANJJUa7Hv8UsPFY3BkAvqpPsB9Z7f0r8TpPSYjoVTfHvI7lZkTVZ00BVl4gW3Y';
 
   async initializePayment(amount: number, currency: string, description: string): Promise<string> {
     try {
@@ -234,45 +224,23 @@ class StripePaymentService implements PaymentService {
 
 export const paymentService = new StripePaymentService();
 
-export function PaymentProvider({ children }: { children: React.ReactNode }): React.ReactElement {
-  if (Platform.OS === 'web') {
-    return <>{children}</>;
-  }
-  
-  return (
-    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
-      {children}
-    </StripeProvider>
-  );
+// Simple provider that works on both web and mobile
+export function PaymentProvider({ children }: { children: React.ReactNode }) {
+  return <>{children}</>;
 }
 
+// Web-compatible payment hook
 export function usePayments() {
-  // Always call the hook - it's either the real one or the mock
-  const stripe = useStripe();
-  
   const processPayment = async (amount: number, currency: string, description: string) => {
     if (Platform.OS === 'web') {
-      // Web fallback - redirect to Stripe Checkout or show message
-      console.log('Web payment processing not implemented - would redirect to Stripe Checkout');
+      console.log('Web payment processing - would redirect to Stripe Checkout');
       throw new Error('Web payments require Stripe Checkout integration');
     }
     
-    if (!stripe) {
-      throw new Error('Stripe not initialized');
-    }
-
     try {
       const clientSecret = await paymentService.initializePayment(amount, currency, description);
-      
-      const { error, paymentIntent } = await stripe.confirmPayment(clientSecret, {
-        paymentMethodType: 'Card',
-      } as any);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return paymentIntent;
+      console.log('Payment initialized with client secret:', clientSecret);
+      return { clientSecret };
     } catch (error) {
       console.error('Payment processing error:', error);
       throw error;
@@ -291,6 +259,5 @@ export function usePayments() {
     processPayment,
     createSubscription,
     cancelSubscription,
-    stripe,
   };
 }

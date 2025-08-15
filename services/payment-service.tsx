@@ -217,11 +217,7 @@ class StripePaymentService implements PaymentService {
 
 export const paymentService = new StripePaymentService();
 
-export function PaymentProvider({ children }: { children: React.ReactNode }) {
-  if (!children) {
-    return null;
-  }
-  
+export function PaymentProvider({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
     <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
       <>{children}</>

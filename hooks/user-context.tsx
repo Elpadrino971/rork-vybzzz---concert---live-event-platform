@@ -1,6 +1,6 @@
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { User } from '@/types';
 
 export const [UserProvider, useUser] = createContextHook(() => {
@@ -22,13 +22,23 @@ export const [UserProvider, useUser] = createContextHook(() => {
           id: '1',
           username: 'musicfan',
           displayName: 'Music Fan',
+          email: 'musicfan@vybzzz.com',
           avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400',
           bio: 'Living for live music 🎵',
           isArtist: false,
           isPro: false,
+          isPremium: false,
           followers: 234,
           following: 567,
           verified: false,
+          role: 'fan',
+          activationCodes: [],
+          subscriptionStatus: 'inactive',
+          subscriptionPlan: 'free',
+          referralCode: 'MUSIC' + Math.random().toString(36).substr(2, 6).toUpperCase(),
+          referralEarnings: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
         setCurrentUser(defaultUser);
         await AsyncStorage.setItem('current-user', JSON.stringify(defaultUser));
@@ -40,7 +50,7 @@ export const [UserProvider, useUser] = createContextHook(() => {
     }
   };
 
-  const updateUser = async (updates: Partial<User>) => {
+  const updateUser = useCallback(async (updates: Partial<User>) => {
     if (!currentUser) return;
     
     const updatedUser = { ...currentUser, ...updates };
@@ -51,18 +61,18 @@ export const [UserProvider, useUser] = createContextHook(() => {
     } catch (error) {
       console.error('Error saving user:', error);
     }
-  };
+  }, [currentUser]);
 
-  const toggleProStatus = () => {
+  const toggleProStatus = useCallback(() => {
     if (currentUser) {
       updateUser({ isPro: !currentUser.isPro });
     }
-  };
+  }, [currentUser, updateUser]);
 
-  return {
+  return useMemo(() => ({
     currentUser,
     updateUser,
     toggleProStatus,
     isLoading,
-  };
+  }), [currentUser, updateUser, toggleProStatus, isLoading]);
 });

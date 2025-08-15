@@ -1,6 +1,23 @@
 import React from 'react';
-import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
+import { Platform } from 'react-native';
 import { Payment, Subscription } from '@/types';
+
+// Create a mock hook for web
+const mockUseStripe = () => null;
+
+// Platform-specific imports
+let StripeProvider: any = ({ children }: { children: React.ReactNode }) => <>{children}</>;
+let useStripe: any = mockUseStripe;
+
+if (Platform.OS !== 'web') {
+  try {
+    const stripeRN = require('@stripe/stripe-react-native');
+    StripeProvider = stripeRN.StripeProvider;
+    useStripe = stripeRN.useStripe;
+  } catch (error) {
+    console.warn('Stripe React Native not available:', error);
+  }
+}
 
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51234567890abcdef'; // Replace with your actual key
 
@@ -218,17 +235,28 @@ class StripePaymentService implements PaymentService {
 export const paymentService = new StripePaymentService();
 
 export function PaymentProvider({ children }: { children: React.ReactNode }): React.ReactElement {
+  if (Platform.OS === 'web') {
+    return <>{children}</>;
+  }
+  
   return (
     <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
-      <>{children}</>
+      {children}
     </StripeProvider>
   );
 }
 
 export function usePayments() {
+  // Always call the hook - it's either the real one or the mock
   const stripe = useStripe();
   
   const processPayment = async (amount: number, currency: string, description: string) => {
+    if (Platform.OS === 'web') {
+      // Web fallback - redirect to Stripe Checkout or show message
+      console.log('Web payment processing not implemented - would redirect to Stripe Checkout');
+      throw new Error('Web payments require Stripe Checkout integration');
+    }
+    
     if (!stripe) {
       throw new Error('Stripe not initialized');
     }

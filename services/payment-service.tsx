@@ -218,9 +218,13 @@ class StripePaymentService implements PaymentService {
 export const paymentService = new StripePaymentService();
 
 export function PaymentProvider({ children }: { children: React.ReactNode }) {
+  if (!children) {
+    return null;
+  }
+  
   return (
     <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
-      {children}
+      <>{children}</>
     </StripeProvider>
   );
 }

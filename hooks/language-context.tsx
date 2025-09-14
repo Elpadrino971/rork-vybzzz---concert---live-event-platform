@@ -291,23 +291,19 @@ export const [LanguageProvider, useLanguage] = createContextHook(() => {
   const [currentLanguage, setCurrentLanguage] = useState<Language>('en');
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadLanguage();
-  }, []);
-
-  const loadLanguage = async () => {
+  const loadLanguage = useCallback(async () => {
     try {
       const savedLanguage = await AsyncStorage.getItem('app-language');
       if (savedLanguage) {
         const language = savedLanguage as Language;
         setCurrentLanguage(language);
-        i18n.changeLanguage(language);
+        await i18n.changeLanguage(language);
       } else {
         const deviceLanguage = Localization.getLocales()[0]?.languageCode?.split('-')[0] as Language;
         const supportedLanguages: Language[] = ['en', 'fr', 'es', 'de', 'it', 'pt'];
         const language = supportedLanguages.includes(deviceLanguage) ? deviceLanguage : 'en';
         setCurrentLanguage(language);
-        i18n.changeLanguage(language);
+        await i18n.changeLanguage(language);
         await AsyncStorage.setItem('app-language', language);
       }
     } catch (error) {
@@ -315,7 +311,11 @@ export const [LanguageProvider, useLanguage] = createContextHook(() => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadLanguage();
+  }, [loadLanguage]);
 
   const changeLanguage = useCallback(async (language: Language) => {
     try {

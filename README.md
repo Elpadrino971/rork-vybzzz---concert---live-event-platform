@@ -1,220 +1,494 @@
-# VyBzzZ - Live Concert Platform
+# VyBzzZ - Live Concert Streaming Platform
 
-VyBzzZ est une plateforme de concerts en direct qui permet aux artistes de streamer leurs performances, aux fans de regarder et soutenir leurs artistes préférés, et aux affiliés de gagner des commissions.
+VyBzzZ is a comprehensive mobile-first concert streaming platform connecting artists with fans through live performances, featuring a sophisticated affiliate system, gamification, and AI-powered highlights.
 
-## Technologies
+**Launch Target**: December 31st, 2025 - David Guetta Concert
 
-- **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, Supabase (PostgreSQL + Auth + Storage)
-- **Paiements**: Stripe Connect (multi-party payments)
-- **Streaming**: AWS IVS (Interactive Video Service)
-- **Affiliation**: Système de commission à 3 niveaux
+## Architecture
 
-## Fonctionnalités
+- **Mobile**: React Native (iOS + Android) with Chromecast/AirPlay casting
+- **Backend**: Next.js 14 API Routes
+- **Database**: Supabase (PostgreSQL + Auth + Storage + Realtime)
+- **Payments**: Stripe Connect (multi-party payments)
+- **Streaming**: YouTube Live (David Guetta event), AWS IVS (future)
+- **Design**: White/Gold (light mode), Black/Netflix Red (dark mode)
 
-### Pour les Fans
-- Regarder des concerts en direct
-- Acheter des billets (prix régulier ou Happy Hour)
-- Envoyer des pourboires aux artistes
-- Chat en direct pendant les événements
-- Utiliser des codes de parrainage d'affiliés
+## Business Model
 
-### Pour les Artistes
-- Créer et gérer des événements
-- Streamer en direct via AWS IVS
-- Recevoir des paiements via Stripe Connect
-- Voir les statistiques de revenus
-- Recevoir des pourboires pendant les streams
+### Artist Subscriptions (14-day free trial)
+- **Starter** (19.99€/month): 50/50 split, tickets 5-12€
+- **Pro** (59.99€/month): 60/40 split, tickets 8-18€
+- **Elite** (129.99€/month): 70/30 split, tickets 12-25€
 
-### Pour les Affiliés
-- Programme d'affiliation à 3 niveaux:
-  - Niveau 1 (référence directe): 2.5%
-  - Niveau 2 (parent): 1.5%
-  - Niveau 3 (grand-parent): 1%
-- Dashboard avec statistiques de commissions
-- Code de parrainage unique
+### Affiliate System
+**Apporteurs d'Affaires (AA)** - 2,997€ investment
+- 3-level commission: 2.5% / 1.5% / 1%
+- Monthly fee: 19.99€
 
-### Happy Hour
-- Tous les mercredis à 20h
-- Billets à 4,99€ au lieu du prix régulier
-- Durée: 1 heure
+**Responsables Régionaux (RR)**
+- Basic: 4,997€ (5% commission)
+- Premium: 9,997€ (30% commission)
+
+### Revenue Streams
+- Artist subscriptions
+- Ticket sales (platform keeps 30-50% based on tier)
+- Tips (10% platform fee)
+- AA/RR investments (target: 30K€ during development)
+
+### Payout Schedule
+- **J+21**: Artists receive payouts 21 days after event ends
+- Automatic via Stripe Connect
+- Commissions deducted before payout
+
+## Key Features
+
+### MVP (David Guetta Launch)
+- ✅ Event listing and detail pages
+- ✅ Ticket purchase with Stripe
+- ✅ Live streaming with casting (Chromecast/AirPlay)
+- ✅ Real-time chat during events
+- ✅ Tips/pourboires to artists
+- ✅ Artist dashboard with analytics
+- ✅ Fan dashboard with tickets and history
+- ✅ Happy Hour (Wednesdays 20h, 4.99€ tickets)
+
+### Phase 2 (Post-Launch)
+- AI highlight detection and short generation
+- Gamification (badges, miles, quests)
+- Fanbases locales (watch parties with GPS)
+- Viralité (share to unlock, referral bonuses)
+- VyBzzZ Coins (virtual currency)
+- QR codes dynamiques with Face ID
 
 ## Installation
 
-### Prérequis
+### Prerequisites
 - Node.js 18+
-- npm ou yarn ou bun
-- Compte Supabase
-- Compte Stripe
-- Compte AWS (pour IVS)
+- npm/yarn/bun
+- Supabase account (free tier works)
+- Stripe account
+- Vercel account (for deployment)
 
-### Configuration
+### Backend Setup
 
-1. Cloner le repository:
+1. **Clone and install**
 ```bash
 git clone https://github.com/Elpadrino971/rork-vybzzz---concert---live-event-platform.git
 cd rork-vybzzz---concert---live-event-platform
-```
-
-2. Installer les dépendances:
-```bash
 npm install
-# ou
-yarn install
-# ou
-bun install
 ```
 
-3. Copier le fichier d'environnement:
+2. **Environment variables**
 ```bash
 cp .env.example .env.local
 ```
 
-4. Configurer les variables d'environnement dans `.env.local`:
+Edit `.env.local` with your credentials:
 ```env
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
 # Stripe
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
-# AWS IVS
-AWS_REGION=eu-west-1
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
+# Stripe Subscription Price IDs
+STRIPE_PRICE_STARTER=price_starter_id
+STRIPE_PRICE_PRO=price_pro_id
+STRIPE_PRICE_ELITE=price_elite_id
+
+# Cron Job Security
+CRON_SECRET=your_random_secret_here
+
+# YouTube Live
+YOUTUBE_API_KEY=your_youtube_api_key
 ```
 
-5. Créer la base de données Supabase:
-   - Aller dans votre projet Supabase
-   - SQL Editor
-   - Copier le contenu de `supabase/schema.sql`
-   - Exécuter le SQL
+3. **Database setup**
 
-6. Lancer le serveur de développement:
+In Supabase SQL Editor, execute:
+```bash
+# Copy entire file content
+supabase/schema-complete.sql
+```
+
+This creates:
+- 20+ tables with full RLS
+- Artist, Event, Ticket, Tip, Commission systems
+- AA/RR hierarchy system
+- Shorts for AI highlights
+- Gamification tables (badges, quests, miles)
+
+4. **Run development server**
 ```bash
 npm run dev
-# ou
-yarn dev
-# ou
-bun dev
+# Backend available at http://localhost:3000
 ```
 
-Ouvrir [http://localhost:3000](http://localhost:3000) dans votre navigateur.
+### Mobile Setup
 
-## Structure du Projet
+See [MOBILE_SETUP.md](MOBILE_SETUP.md) for complete React Native setup instructions.
 
-```
-.
-├── app/                      # Next.js App Router
-│   ├── api/                 # API Routes
-│   │   ├── events/         # Gestion des événements
-│   │   ├── tickets/        # Achat de billets
-│   │   ├── tips/           # Pourboires
-│   │   ├── affiliates/     # Affiliation
-│   │   └── webhooks/       # Webhooks Stripe
-│   ├── layout.tsx          # Layout racine
-│   └── page.tsx            # Page d'accueil
-├── lib/                     # Utilitaires
-│   ├── supabase/           # Clients Supabase
-│   ├── stripe.ts           # Utilitaires Stripe
-│   ├── aws-ivs.ts          # Intégration AWS IVS
-│   ├── happy-hour.ts       # Logique Happy Hour
-│   └── affiliates.ts       # Système d'affiliation
-├── types/                   # Types TypeScript
-│   └── database.ts         # Types de la base de données
-├── supabase/               # Schéma de base de données
-│   └── schema.sql          # Tables, RLS, fonctions
-└── public/                 # Assets statiques
+Quick start:
+```bash
+npx create-expo-app vybzzz-mobile --template blank-typescript
+cd vybzzz-mobile
+
+# Install dependencies
+npm install @supabase/supabase-js @stripe/stripe-react-native
+npm install react-native-google-cast react-native-airplay-ios
+
+# Copy API client and types
+cp ../lib/api-client.ts ./lib/
+cp ../types/database-complete.ts ./types/
+cp ../constants/Colors.ts ./constants/
 ```
 
 ## API Routes
 
 ### Events
-- `GET /api/events` - Liste des événements
-- `POST /api/events` - Créer un événement (artistes uniquement)
-- `GET /api/events/[id]` - Détails d'un événement
-- `PUT /api/events/[id]` - Modifier un événement
-- `DELETE /api/events/[id]` - Supprimer un événement
+- **GET** `/api/events` - List events (filters: status, artist_id, upcoming)
+- **POST** `/api/events` - Create event (validates tier pricing, Happy Hour)
+- **GET** `/api/events/[id]` - Event details with artist info
+- **PUT** `/api/events/[id]` - Update event (validates pricing)
+- **DELETE** `/api/events/[id]` - Delete or cancel event
 
-### Tickets
-- `POST /api/tickets/purchase` - Acheter un billet
+### Artists
+- **GET** `/api/artists` - List artists (search, genre, country filters)
+- **GET** `/api/artists/[id]` - Artist profile with stats and upcoming events
+- **POST** `/api/artists/[id]/follow` - Follow artist
+- **DELETE** `/api/artists/[id]/follow` - Unfollow artist
 
-### Tips
-- `POST /api/tips/create` - Envoyer un pourboire
+### Dashboard
+- **GET** `/api/dashboard/artist` - Artist analytics:
+  - Events count by status
+  - Revenue breakdown (tickets + tips)
+  - Subscription status
+  - Next payout schedule (J+21)
 
-### Affiliates
-- `POST /api/affiliates/register` - S'inscrire comme affilié
-- `GET /api/affiliates/stats` - Statistiques d'affiliation
+- **GET** `/api/dashboard/fan` - Fan activity:
+  - Purchased tickets (upcoming/past)
+  - Followed artists
+  - Tips sent
+  - Badges, miles, quests
+  - AA/RR stats
 
-### Webhooks
-- `POST /api/webhooks/stripe` - Webhooks Stripe
+### Shorts (TikTok-style Feed)
+- **GET** `/api/shorts` - Vertical video feed (recent, popular, trending)
 
-## Base de Données
+### Payments
+- **POST** `/api/stripe/create-payment-intent` - Create payment for ticket/tip
+- **POST** `/api/stripe/webhook` - Handle Stripe events:
+  - `payment_intent.succeeded`: Complete ticket/tip, create commissions
+  - `customer.subscription.*`: Manage artist subscriptions
+  - `account.updated`: Track Stripe Connect status
 
-### Tables Principales
-- `profiles` - Profils utilisateurs
-- `artists` - Informations artistes
-- `events` - Événements/Concerts
-- `tickets` - Billets achetés
-- `tips` - Pourboires
-- `transactions` - Toutes les transactions
-- `affiliates` - Affiliés
-- `affiliate_commissions` - Commissions d'affiliation
-- `event_attendees` - Participants aux événements
-- `event_messages` - Messages de chat
+### Cron Jobs
+- **GET** `/api/cron/payouts` - J+21 automatic payout processor
+  - Runs daily at 2 AM (see `vercel.json`)
+  - Protected with `CRON_SECRET`
+  - Finds events ended 21 days ago
+  - Calculates revenue, deducts commissions
+  - Initiates Stripe payouts
 
-## Sécurité
+## Database Schema
 
-- Row Level Security (RLS) activé sur toutes les tables
-- Authentification via Supabase Auth
-- Paiements sécurisés via Stripe Connect
-- Webhooks Stripe pour la validation des paiements
-- Variables d'environnement pour les secrets
+### Core Tables
+- `users` - User accounts (fan, artist, aa, rr)
+- `profiles` - User profile information
+- `artists` - Artist profiles with subscription tiers
+- `events` - Concert events with pricing
+- `tickets` - Ticket purchases with AA/RR attribution
+- `tips` - Tips to artists (90% artist, 10% platform)
 
-## Stripe Connect
+### Affiliate System
+- `apporteurs` - AA accounts with 3-level hierarchy
+- `responsables_regionaux` - RR accounts with regions
+- `commissions` - All commission records
+- `payouts` - Artist payout schedule (J+21)
 
-Les artistes doivent compléter l'onboarding Stripe Connect pour:
-- Recevoir les paiements des billets
-- Recevoir les pourboires
-- Gérer leurs revenus
+### Gamification
+- `badges` - Achievement badges
+- `user_badges` - Earned badges
+- `quests` - Challenges for users
+- `user_quests` - Quest progress
+- `miles_transactions` - Miles earned/spent
 
-La plateforme prend:
-- 5% sur les ventes de billets
-- 10% sur les pourboires
+### Content
+- `shorts` - AI-generated concert highlights
+- `short_likes` - User likes on shorts
+- `artist_followers` - Artist follow relationships
+- `event_chat_messages` - Real-time chat
 
-## AWS IVS
+## Stripe Integration
 
-Configuration pour le streaming en direct:
-- Création automatique de channels IVS
-- Génération de stream keys
-- URLs de lecture pour les fans
-- Enregistrement VOD (optionnel)
-
-## Déploiement
-
-### Vercel (Recommandé)
-```bash
-vercel deploy
+### Artist Subscriptions
+```typescript
+// 14-day free trial
+const subscription = await stripe.subscriptions.create({
+  customer: customerId,
+  items: [{ price: priceId }],
+  trial_period_days: 14,
+})
 ```
 
-### Autres Plateformes
-- Netlify
-- AWS Amplify
-- Railway
-- Render
+### Ticket Purchase
+```typescript
+// Multi-party payment with commissions
+const paymentIntent = await stripe.paymentIntents.create({
+  amount: ticketPrice * 100,
+  currency: 'eur',
+  application_fee_amount: platformFee * 100,
+  transfer_data: {
+    destination: artistStripeAccountId,
+  },
+  metadata: { ticket_id, aa_id, rr_id }
+})
+```
 
-## Contribution
+### Payouts (J+21)
+```typescript
+// Automatic via cron job
+const payout = await stripe.payouts.create(
+  {
+    amount: payoutAmount * 100,
+    currency: 'eur',
+  },
+  { stripeAccount: artistStripeAccountId }
+)
+```
 
-Les contributions sont les bienvenues! Merci de créer une issue ou une pull request.
+## Happy Hour
 
-## Licence
+Every Wednesday at 20:00, tickets are 4.99€ regardless of tier.
 
-Créé par Rork pour VyBzzZ
+Validation in event creation/update:
+```typescript
+const eventDate = new Date(scheduled_at)
+const isWednesday = eventDate.getDay() === 3
+const isHappyHour = isWednesday && eventDate.getHours() === 20
 
-## Support
+if (isHappyHour) {
+  ticket_price = 4.99
+}
+```
 
-Pour toute question ou support, contactez l'équipe VyBzzZ.
+## Commission Structure
+
+### AA Commissions (3 levels)
+- **Level 1** (direct): 2.5% of ticket price
+- **Level 2** (parent): 1.5% of ticket price
+- **Level 3** (grandparent): 1% of ticket price
+
+### RR Commissions
+- **Basic**: 5% of all tickets in region
+- **Premium**: 30% of all tickets in region
+
+**Important**: VyBzzZ pays ALL commissions, never the artists.
+
+## Deployment
+
+### Vercel (Recommended)
+
+1. **Connect GitHub repository**
+```bash
+vercel link
+```
+
+2. **Set environment variables** in Vercel dashboard
+
+3. **Deploy**
+```bash
+vercel --prod
+```
+
+4. **Configure Stripe webhook**
+- Webhook URL: `https://your-domain.vercel.app/api/stripe/webhook`
+- Events to listen:
+  - `payment_intent.succeeded`
+  - `payment_intent.payment_failed`
+  - `customer.subscription.*`
+  - `account.updated`
+
+5. **Cron job**
+Automatic via `vercel.json`:
+```json
+{
+  "crons": [{
+    "path": "/api/cron/payouts",
+    "schedule": "0 2 * * *"
+  }]
+}
+```
+
+## Security
+
+### Row Level Security (RLS)
+All tables have RLS enabled with policies:
+- Users can only view/edit their own data
+- Artists can only manage their events
+- Public can view published events
+- Service role bypasses RLS for admin operations
+
+### API Authentication
+```typescript
+const { data: { user } } = await supabase.auth.getUser()
+if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+```
+
+### Stripe Webhook Verification
+```typescript
+const signature = request.headers.get('stripe-signature')
+const event = stripe.webhooks.constructEvent(
+  body,
+  signature,
+  process.env.STRIPE_WEBHOOK_SECRET
+)
+```
+
+### Cron Secret
+```typescript
+const authHeader = request.headers.get('authorization')
+if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+}
+```
+
+## Design System
+
+### Colors (constants/Colors.ts)
+
+**Light Mode**
+- Background: `#FFFFFF`
+- Primary: `#FFD700` (Gold)
+- Accent: `#FFA500` (Dark Gold)
+- Text: `#000000`
+
+**Dark Mode**
+- Background: `#000000`
+- Primary: `#E50914` (Netflix Red)
+- Accent: `#B20710` (Dark Netflix Red)
+- Text: `#FFFFFF`
+
+### Typography
+- Font: Inter (system font fallback)
+- Sizes: 12, 14, 16, 18, 24, 32, 40px
+
+### Spacing
+- 4, 8, 12, 16, 24, 32, 48, 64px
+
+## Project Structure
+
+```
+.
+├── app/
+│   ├── api/
+│   │   ├── artists/          # Artist listing & detail
+│   │   ├── cron/
+│   │   │   └── payouts/      # J+21 payout processor
+│   │   ├── dashboard/
+│   │   │   ├── artist/       # Artist analytics
+│   │   │   └── fan/          # Fan activity
+│   │   ├── events/           # Event CRUD
+│   │   ├── shorts/           # TikTok-style feed
+│   │   └── stripe/
+│   │       ├── create-payment-intent/
+│   │       └── webhook/      # Stripe event handler
+│   └── ...
+├── constants/
+│   └── Colors.ts             # Design system
+├── lib/
+│   ├── api-client.ts         # Ready-to-use API client for mobile
+│   ├── stripe-mobile.ts      # Stripe utilities
+│   └── supabase/
+├── supabase/
+│   └── schema-complete.sql   # Complete database schema
+├── types/
+│   └── database-complete.ts  # TypeScript types
+├── vercel.json               # Cron job configuration
+└── .env.example              # Environment variables template
+```
+
+## Mobile Integration
+
+The mobile app uses the API client:
+
+```typescript
+import { api } from '@/lib/api-client'
+
+// Get upcoming events
+const events = await api.events.getUpcoming(20)
+
+// Purchase ticket
+const ticket = await api.tickets.purchase({
+  event_id: eventId,
+  referral_code: aaCode, // Optional AA referral
+})
+
+// Send tip
+await api.tips.send({
+  artist_id: artistId,
+  amount: 10,
+  message: 'Great performance!',
+})
+
+// Get dashboard
+const dashboard = await api.dashboard.getArtist()
+const fanDashboard = await api.dashboard.getFan()
+```
+
+## Testing
+
+### Test Stripe Cards
+- **Success**: `4242 4242 4242 4242`
+- **Decline**: `4000 0000 0000 0002`
+- **3D Secure**: `4000 0027 6000 3184`
+
+### Test Happy Hour
+Create event for next Wednesday at 20:00:
+```typescript
+POST /api/events
+{
+  "title": "Test Happy Hour",
+  "scheduled_at": "2025-11-05T20:00:00Z",
+  "ticket_price": 4.99,
+  "is_happy_hour": true
+}
+```
+
+## Roadmap
+
+### Phase 1 - MVP (November 2025)
+- ✅ Complete backend API
+- ✅ Stripe integration
+- ✅ Database schema
+- 🔄 Mobile app development
+- 🔄 David Guetta event setup
+
+### Phase 2 - Post-Launch (Q1 2026)
+- AI highlight detection
+- Short video generation
+- Gamification rollout
+- Fanbases locales
+- Watch party features
+
+### Phase 3 - Scale (Q2 2026)
+- AWS IVS migration
+- SDK development (100MS clone)
+- Token $VYBZ launch
+- International expansion
+
+## Contributing
+
+This is a private project for VyBzzZ Platform. For questions or support, contact the development team.
+
+## License
+
+© 2025 VyBzzZ Platform. All rights reserved.
+
+---
+
+**Built with Claude Code** 🤖

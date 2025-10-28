@@ -1,0 +1,184 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { stripe } from '@/lib/stripe'
+import { createClient } from '@/lib/supabase/server'
+import Stripe from 'stripe'
+
+export async function POST(request: NextRequest) {
+  const body = await request.text()
+  const signature = request.headers.get('stripe-signature')
+
+  if (!signature) {
+    return NextResponse.json({ error: 'No signature' }, { status: 400 })
+  }
+
+  let event: Stripe.Event
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    )
+  } catch (err: any) {
+    console.error('Webhook signature verification failed:', err.message)
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+  }
+
+  const supabase = await createClient()
+
+  try {
+    switch (event.type) {
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+        const metadata = paymentIntent.metadata
+
+        if (metadata.type === 'ticket_purchase') {
+          // Update ticket status
+          const { error: ticketError } = await supabase
+            .from('tickets')
+            .update({ status: 'confirmed' })
+            .eq('payment_intent_id', paymentIntent.id)
+
+          if (ticketError) {
+            console.error('Error updating ticket:', ticketError)
+          }
+
+          // Update event attendee count
+          const { data: ticket } = await supabase
+            .from('tickets')
+            .select('event_id')
+            .eq('payment_intent_id', paymentIntent.id)
+            .single()
+
+          if (ticket) {
+            await supabase.rpc('increment_event_attendees', {
+              event_id: ticket.event_id,
+            })
+          }
+
+          // Create transaction record
+          await supabase.from('transactions').insert({
+            transaction_type: 'ticket_purchase',
+            amount: paymentIntent.amount / 100,
+            currency: paymentIntent.currency.toUpperCase(),
+            stripe_payment_id: paymentIntent.id,
+            status: 'completed',
+            metadata: {
+              ticket_id: metadata.ticket_id,
+            },
+          })
+        } else if (metadata.type === 'tip') {
+          // Update tip status
+          const { error: tipError } = await supabase
+            .from('tips')
+            .update({ status: 'completed' })
+            .eq('payment_intent_id', paymentIntent.id)
+
+          if (tipError) {
+            console.error('Error updating tip:', tipError)
+          }
+
+          // Update transaction record
+          await supabase
+            .from('transactions')
+            .update({ status: 'completed' })
+            .eq('stripe_payment_id', paymentIntent.id)
+        }
+
+        break
+      }
+
+      case 'payment_intent.payment_failed': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+        const metadata = paymentIntent.metadata
+
+        if (metadata.type === 'ticket_purchase') {
+          // Mark ticket as refunded
+          await supabase
+            .from('tickets')
+            .update({ status: 'refunded' })
+            .eq('payment_intent_id', paymentIntent.id)
+        } else if (metadata.type === 'tip') {
+          // Mark tip as failed
+          await supabase
+            .from('tips')
+            .update({ status: 'failed' })
+            .eq('payment_intent_id', paymentIntent.id)
+        }
+
+        // Update transaction record
+        await supabase
+          .from('transactions')
+          .update({ status: 'failed' })
+          .eq('stripe_payment_id', paymentIntent.id)
+
+        break
+      }
+
+      case 'account.updated': {
+        const account = event.data.object as Stripe.Account
+
+        // Update artist's Stripe Connect status
+        if (account.details_submitted && account.charges_enabled) {
+          await supabase
+            .from('artists')
+            .update({ stripe_connect_completed: true })
+            .eq('stripe_account_id', account.id)
+        }
+
+        break
+      }
+
+      case 'transfer.created': {
+        const transfer = event.data.object as Stripe.Transfer
+        const metadata = transfer.metadata
+
+        if (metadata.type === 'affiliate_commission') {
+          // Record transfer for commission payout
+          await supabase
+            .from('affiliate_commissions')
+            .update({
+              status: 'paid',
+              paid_at: new Date().toISOString(),
+            })
+            .eq('id', metadata.commission_id)
+        }
+
+        break
+      }
+
+      case 'charge.refunded': {
+        const charge = event.data.object as Stripe.Charge
+        const paymentIntentId = charge.payment_intent as string
+
+        // Update ticket status
+        await supabase
+          .from('tickets')
+          .update({ status: 'refunded' })
+          .eq('payment_intent_id', paymentIntentId)
+
+        // Update tip status
+        await supabase
+          .from('tips')
+          .update({ status: 'refunded' })
+          .eq('payment_intent_id', paymentIntentId)
+
+        // Update transaction
+        await supabase
+          .from('transactions')
+          .update({ status: 'refunded' })
+          .eq('stripe_payment_id', paymentIntentId)
+
+        break
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`)
+    }
+
+    return NextResponse.json({ received: true })
+  } catch (error: any) {
+    console.error('Error processing webhook:', error)
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+}

@@ -44,7 +44,7 @@ export default function ShopScreen() {
                     styles.tab,
                     isSelected && { backgroundColor: colors.primary },
                   ]}
-                  onPress={() => setSelectedTab(tab.id as any)}
+                  onPress={() => setSelectedTab(tab.id as 'tickets' | 'merch' | 'vip')}
                 >
                   <Icon
                     size={18}

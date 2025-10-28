@@ -299,9 +299,9 @@ export const [LanguageProvider, useLanguage] = createContextHook(() => {
         setCurrentLanguage(language);
         await i18n.changeLanguage(language);
       } else {
-        const deviceLanguage = Localization.getLocales()[0]?.languageCode?.split('-')[0] as Language;
+        const deviceLanguageCode = Localization.getLocales()[0]?.languageCode?.split('-')[0] || 'en';
         const supportedLanguages: Language[] = ['en', 'fr', 'es', 'de', 'it', 'pt'];
-        const language = supportedLanguages.includes(deviceLanguage) ? deviceLanguage : 'en';
+        const language = supportedLanguages.includes(deviceLanguageCode as Language) ? deviceLanguageCode as Language : 'en';
         setCurrentLanguage(language);
         await i18n.changeLanguage(language);
         await AsyncStorage.setItem('app-language', language);

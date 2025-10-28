@@ -65,7 +65,7 @@ export default function VideoOverlay({ video, isMuted, onMuteToggle }: VideoOver
       <View style={styles.rightActions}>
         <TouchableOpacity
           style={styles.avatarContainer}
-          onPress={() => router.push(`../profile/${video.user.id}` as any)}
+          onPress={() => router.push(`../profile/${video.user.id}` as `../profile/${string}`)}
         >
           <Image source={{ uri: video.user.avatar }} style={styles.avatar} />
           {!video.user.isArtist && (
@@ -101,7 +101,7 @@ export default function VideoOverlay({ video, isMuted, onMuteToggle }: VideoOver
 
       {/* Bottom Info */}
       <View style={styles.bottomInfo}>
-        <TouchableOpacity onPress={() => router.push(`../profile/${video.user.id}` as any)}>
+        <TouchableOpacity onPress={() => router.push(`../profile/${video.user.id}` as `../profile/${string}`)}>
           <Text style={styles.username}>@{video.user.username}</Text>
         </TouchableOpacity>
         
@@ -116,7 +116,7 @@ export default function VideoOverlay({ video, isMuted, onMuteToggle }: VideoOver
         {video.event && (
           <TouchableOpacity
             style={[styles.eventCard, { backgroundColor: colors.overlay }]}
-            onPress={() => video.event && router.push(`../event/${video.event.id}` as any)}
+            onPress={() => video.event && router.push(`../event/${video.event.id}` as `../event/${string}`)}
           >
             <View style={styles.eventInfo}>
               <View style={styles.eventRow}>

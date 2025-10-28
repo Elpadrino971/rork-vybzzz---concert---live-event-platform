@@ -12,12 +12,19 @@ const processWebPayment = async (amount: number, currency: string, description: 
   };
 };
 
+// WARNING: These API keys should be moved to environment variables (.env file)
+// Never commit real API keys to version control
+// TODO: Replace with process.env.STRIPE_PUBLISHABLE_KEY in production
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_51Rb3BrH2HsUSSb9aOjIMa2Oqzxw9oozLShfcsrvzxAGmp6uFzsRC3Jl1fMhXm8C4EZJIjFn2oGLbK51KI9q8tCdQ00c9sFlYQ7';
 
 // Declare global Stripe type for web
+interface StripeConstructor {
+  (key: string): any;
+}
+
 declare global {
   interface Window {
-    Stripe?: any;
+    Stripe?: StripeConstructor;
   }
 }
 
@@ -34,6 +41,9 @@ export interface PaymentService {
 
 class StripePaymentService implements PaymentService {
   private baseUrl = 'https://api.stripe.com/v1';
+  // CRITICAL SECURITY WARNING: Secret key should NEVER be in client-side code
+  // This key should only be used server-side. Move to backend API immediately!
+  // TODO: Remove this and create a backend API for payment processing
   private secretKey = 'sk_test_51Rb3BrH2HsUSSb9a4sup24BA0PnUmlvKIYGkANJJUa7Hv8UsPFY3BkAvqpPsB9Z7f0r8TpPSYjoVTfHvI7lZkTVZ00BVl4gW3Y';
 
   async initializePayment(amount: number, currency: string, description: string): Promise<string> {
@@ -51,6 +61,11 @@ class StripePaymentService implements PaymentService {
           automatic_payment_methods: JSON.stringify({ enabled: true }),
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Payment initialization failed: ${errorData.error?.message || response.statusText}`);
+      }
 
       const paymentIntent = await response.json();
       return paymentIntent.client_secret;
@@ -72,6 +87,11 @@ class StripePaymentService implements PaymentService {
           payment_method: paymentMethodId,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Payment confirmation failed: ${errorData.error?.message || response.statusText}`);
+      }
 
       const paymentIntent = await response.json();
       
@@ -111,6 +131,11 @@ class StripePaymentService implements PaymentService {
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Subscription creation failed: ${errorData.error?.message || response.statusText}`);
+      }
+
       const subscription = await response.json();
       
       const sub: Subscription = {
@@ -135,12 +160,17 @@ class StripePaymentService implements PaymentService {
 
   async cancelSubscription(subscriptionId: string): Promise<void> {
     try {
-      await fetch(`${this.baseUrl}/subscriptions/${subscriptionId}`, {
+      const response = await fetch(`${this.baseUrl}/subscriptions/${subscriptionId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${this.secretKey}`,
         },
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Subscription cancellation failed: ${errorData.error?.message || response.statusText}`);
+      }
     } catch (error) {
       console.error('Error canceling subscription:', error);
       throw error;
@@ -160,6 +190,11 @@ class StripePaymentService implements PaymentService {
           proration_behavior: 'create_prorations',
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Subscription update failed: ${errorData.error?.message || response.statusText}`);
+      }
 
       const subscription = await response.json();
       
@@ -191,6 +226,11 @@ class StripePaymentService implements PaymentService {
         },
       });
 
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to get payment methods: ${errorData.error?.message || response.statusText}`);
+      }
+
       const data = await response.json();
       return data.data || [];
     } catch (error) {
@@ -201,7 +241,7 @@ class StripePaymentService implements PaymentService {
 
   async addPaymentMethod(customerId: string, paymentMethodId: string): Promise<void> {
     try {
-      await fetch(`${this.baseUrl}/payment_methods/${paymentMethodId}/attach`, {
+      const response = await fetch(`${this.baseUrl}/payment_methods/${paymentMethodId}/attach`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.secretKey}`,
@@ -211,6 +251,11 @@ class StripePaymentService implements PaymentService {
           customer: customerId,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to add payment method: ${errorData.error?.message || response.statusText}`);
+      }
     } catch (error) {
       console.error('Error adding payment method:', error);
       throw error;
@@ -219,12 +264,17 @@ class StripePaymentService implements PaymentService {
 
   async removePaymentMethod(paymentMethodId: string): Promise<void> {
     try {
-      await fetch(`${this.baseUrl}/payment_methods/${paymentMethodId}/detach`, {
+      const response = await fetch(`${this.baseUrl}/payment_methods/${paymentMethodId}/detach`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.secretKey}`,
         },
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to remove payment method: ${errorData.error?.message || response.statusText}`);
+      }
     } catch (error) {
       console.error('Error removing payment method:', error);
       throw error;
@@ -245,8 +295,10 @@ export const initializeStripe = async () => {
       
       return new Promise((resolve) => {
         script.onload = () => {
-          window.Stripe = (window as any).Stripe(STRIPE_PUBLISHABLE_KEY);
-          resolve(window.Stripe);
+          if (window.Stripe) {
+            const stripeInstance = window.Stripe(STRIPE_PUBLISHABLE_KEY);
+            resolve(stripeInstance);
+          }
         };
       });
     }

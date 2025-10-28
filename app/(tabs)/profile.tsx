@@ -54,7 +54,7 @@ export default function ProfileScreen() {
         <View style={styles.header}>
           <TouchableOpacity
             style={[styles.iconButton, { backgroundColor: colors.surface }]}
-            onPress={() => router.push('../settings' as any)}
+            onPress={() => router.push('../settings' as '../settings')}
           >
             <Settings size={20} color={colors.text} />
           </TouchableOpacity>

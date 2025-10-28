@@ -22,6 +22,9 @@ interface Message {
   timestamp: Date;
 }
 
+// CRITICAL SECURITY WARNING: API key should NEVER be in client-side code
+// This key is exposed to all users and should be rotated immediately
+// TODO: Move to environment variable (process.env.OPENAI_API_KEY) or use backend API
 const OPENAI_API_KEY = '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';
 
 export default function ChatScreen() {

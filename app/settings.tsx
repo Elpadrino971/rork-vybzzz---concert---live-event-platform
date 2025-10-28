@@ -94,19 +94,19 @@ export default function SettingsScreen() {
         {
           icon: Crown,
           label: t('settings.upgradeToPremium'),
-          onPress: () => router.push('../premium' as any),
+          onPress: () => router.push('../premium' as '../premium'),
           badge: !currentUser?.isPremium ? 'NEW' : undefined,
         },
         {
           icon: Users,
           label: t('settings.referralProgram'),
-          onPress: () => router.push('../referral' as any),
+          onPress: () => router.push('../referral' as '../referral'),
           subtitle: currentUser?.referralEarnings ? `${currentUser.referralEarnings.toFixed(2)} earned` : undefined,
         },
         ...(currentUser?.isPro ? [{
           icon: BarChart3,
           label: t('settings.proDashboard'),
-          onPress: () => router.push('../dashboard' as any),
+          onPress: () => router.push('../dashboard' as '../dashboard'),
         }] : []),
       ],
     },
@@ -144,7 +144,7 @@ export default function SettingsScreen() {
         {
           icon: MessageCircle,
           label: t('settings.aiAssistant'),
-          onPress: () => router.push('../chat' as any),
+          onPress: () => router.push('../chat' as '../chat'),
         },
         {
           icon: HelpCircle,

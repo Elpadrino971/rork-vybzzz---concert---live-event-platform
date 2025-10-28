@@ -35,7 +35,7 @@ export default function EventCard({ event, variant = 'default' }: EventCardProps
           width: cardWidth,
         },
       ]}
-      onPress={() => router.push(`../event/${event.id}` as any)}
+      onPress={() => router.push(`../event/${event.id}` as `../event/${string}`)}
       activeOpacity={0.8}
     >
       <View style={styles.imageContainer}>

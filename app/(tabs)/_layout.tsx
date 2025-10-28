@@ -47,7 +47,7 @@ export default function TabLayout() {
           title: "",
           tabBarIcon: ({ focused }) => (
             <TouchableOpacity
-              onPress={() => router.push('../create' as any)}
+              onPress={() => router.push('../create' as '../create')}
               style={{
                 backgroundColor: colors.accent,
                 width: 48,
@@ -64,7 +64,7 @@ export default function TabLayout() {
         listeners={{
           tabPress: (e) => {
             e.preventDefault();
-            router.push('../create' as any);
+            router.push('../create' as '../create');
           },
         }}
       />

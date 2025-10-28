@@ -66,7 +66,7 @@ export class AIService {
   async getContextualResponse(userMessage: string, conversationHistory: ChatMessage[] = []): Promise<string> {
     const systemMessage: ChatMessage = {
       id: 'system',
-      role: 'user',
+      role: 'assistant',
       content: this.getVybzzzContext() + '\n\nUser question: ' + userMessage,
       timestamp: new Date().toISOString(),
     };

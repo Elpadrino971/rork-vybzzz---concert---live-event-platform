@@ -110,7 +110,7 @@ export default function HomeScreen() {
           {/* Live Button */}
           <TouchableOpacity
             style={[styles.liveButton, { backgroundColor: colors.accent }]}
-            onPress={() => router.push('./discover' as any)}
+            onPress={() => router.push('./discover' as './discover')}
           >
             <Radio size={16} color="#fff" />
             <Text style={styles.liveButtonText}>LIVE</Text>

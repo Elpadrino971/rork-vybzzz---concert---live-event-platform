@@ -39,7 +39,11 @@ export async function GET(
   }
 }
 
-// PUT - Update an event
+/**
+ * PUT /api/events/[id] - Update an event
+ * Validates ticket price changes based on artist subscription tier
+ * Only allows updates to own events
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -61,7 +65,7 @@ export async function PUT(
     // Check if event exists and belongs to user
     const { data: existingEvent, error: fetchError } = await supabase
       .from('events')
-      .select('artist_id')
+      .select('artist_id, status, scheduled_at')
       .eq('id', id)
       .single()
 
@@ -76,21 +80,73 @@ export async function PUT(
       )
     }
 
+    // Don't allow updates to live or ended events
+    if (existingEvent.status === 'live' || existingEvent.status === 'ended') {
+      return NextResponse.json(
+        { error: 'Cannot update live or ended events' },
+        { status: 400 }
+      )
+    }
+
     const body = await request.json()
+
+    // If ticket price is being updated, validate it
+    if (body.ticket_price !== undefined) {
+      const { data: artist } = await supabase
+        .from('artists')
+        .select('subscription_tier')
+        .eq('id', user.id)
+        .single()
+
+      if (artist) {
+        const tierConfig = {
+          starter: { min: 5, max: 12 },
+          pro: { min: 8, max: 18 },
+          elite: { min: 12, max: 25 },
+        }
+
+        const tier = artist.subscription_tier as 'starter' | 'pro' | 'elite'
+        const priceRange = tierConfig[tier]
+
+        // Allow Happy Hour price (4.99€) if scheduled on Wednesday 20h
+        const eventDate = new Date(body.scheduled_at || existingEvent.scheduled_at)
+        const isWednesday = eventDate.getDay() === 3
+        const hour = eventDate.getHours()
+        const isHappyHour = isWednesday && hour === 20 && body.ticket_price === 4.99
+
+        if (!isHappyHour && (body.ticket_price < priceRange.min || body.ticket_price > priceRange.max)) {
+          return NextResponse.json(
+            {
+              error: `Ticket price must be between ${priceRange.min}€ and ${priceRange.max}€ for ${tier} tier`,
+            },
+            { status: 400 }
+          )
+        }
+      }
+    }
 
     // Update event
     const { data: event, error: updateError } = await supabase
       .from('events')
       .update(body)
       .eq('id', id)
-      .select('*, artist:artists(*, profile:profiles(*))')
+      .select(`
+        *,
+        artist:artists(
+          id,
+          stage_name,
+          avatar_url,
+          bio,
+          subscription_tier
+        )
+      `)
       .single()
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, event })
+    return NextResponse.json({ success: true, event, message: 'Event updated successfully' })
   } catch (error: any) {
     console.error('Error updating event:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

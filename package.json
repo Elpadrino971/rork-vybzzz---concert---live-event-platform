@@ -8,10 +8,15 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "check-env": "tsx scripts/check-env.ts",
+    "check-env:prod": "tsx scripts/check-env.ts .env.production",
+    "migrate": "./scripts/run-migrations.sh",
     "setup:stripe": "tsx scripts/setup-stripe.ts",
     "supabase:generate-types": "supabase gen types typescript --project-id YOUR_PROJECT_ID > types/supabase.ts",
     "test:stripe": "tsx scripts/test-stripe.ts",
-    "test:api": "tsx scripts/test-api.ts"
+    "test:api": "tsx scripts/test-api.ts",
+    "predev": "npm run check-env",
+    "prebuild": "npm run check-env"
   },
   "dependencies": {
     "@sentry/nextjs": "^10.22.0",

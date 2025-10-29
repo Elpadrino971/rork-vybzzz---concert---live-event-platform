@@ -1,7 +1,7 @@
 /**
  * Rate Limiting Middleware
  *
- * AMÉLIORATION CRITIQUE: Protection contre DDoS et abus
+ * AMÃ‰LIORATION CRITIQUE: Protection contre DDoS et abus
  *
  * Options:
  * 1. Production: Upstash Redis (@upstash/ratelimit)

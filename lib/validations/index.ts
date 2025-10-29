@@ -1,8 +1,8 @@
 /**
  * Validation Schemas with Zod
  *
- * AMÉLIORATION CRITIQUE: Validation des données entrantes
- * Prévient: SQL injection, XSS, données invalides
+ * AMÃ‰LIORATION CRITIQUE: Validation des donnÃ©es entrantes
+ * PrÃ©vient: SQL injection, XSS, donnÃ©es invalides
  *
  * Usage dans API routes:
  * ```typescript
@@ -123,7 +123,7 @@ export const PurchaseTicketSchema = z.object({
 
 export const CreateTipSchema = z.object({
   artist_id: UUIDSchema,
-  amount: z.number().min(1).max(500), // 1¬ - 500¬
+  amount: z.number().min(1).max(500), // 1Â¬ - 500Â¬
   message: z.string().max(VALIDATION.tip.messageMaxLength).optional(),
   payment_method_id: z.string().optional(),
 })
@@ -163,7 +163,7 @@ export const RegisterApporteurSchema = z.object({
 })
 
 // ============================================
-// RESPONSABLE RÉGIONAL (RR) SCHEMAS
+// RESPONSABLE RÃ‰GIONAL (RR) SCHEMAS
 // ============================================
 
 export const RegisterRRSchema = z.object({

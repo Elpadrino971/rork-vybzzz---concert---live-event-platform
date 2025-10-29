@@ -108,7 +108,9 @@ const envSchema = z.object({
   // ============================================
   // Optional: Monitoring (Sentry)
   // ============================================
-  SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  SENTRY_ORG: z.string().optional(),
+  SENTRY_PROJECT: z.string().optional(),
   SENTRY_AUTH_TOKEN: z.string().optional(),
 
   // ============================================
@@ -184,7 +186,7 @@ export function isFeatureEnabled(feature: 'youtube' | 'aws_ivs' | '100ms' | 'red
     case 'redis':
       return !!(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN)
     case 'sentry':
-      return !!env.SENTRY_DSN
+      return !!env.NEXT_PUBLIC_SENTRY_DSN
     default:
       return false
   }

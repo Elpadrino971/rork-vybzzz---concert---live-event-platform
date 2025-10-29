@@ -6,6 +6,18 @@
  * Compatible avec Sentry, Datadog, CloudWatch, etc.
  */
 
+import { isFeatureEnabled } from './env'
+
+// Conditional Sentry import (only in browser/server, not edge)
+let Sentry: any = null
+if (typeof window !== 'undefined' || process.env.NEXT_RUNTIME === 'nodejs') {
+  try {
+    Sentry = require('@sentry/nextjs')
+  } catch (e) {
+    // Sentry not available
+  }
+}
+
 // ============================================
 // TYPES
 // ============================================
@@ -125,16 +137,63 @@ class Logger {
   }
 
   private sendToExternalService(entry: LogEntry) {
-    // This can be extended to send logs to:
-    // - Sentry (for errors)
+    // Send to Sentry if enabled
+    if (Sentry && isFeatureEnabled('sentry')) {
+      // Add context to Sentry
+      if (entry.context) {
+        Sentry.setContext('log_context', entry.context)
+
+        // Set user context if available
+        if (entry.context.userId) {
+          Sentry.setUser({ id: entry.context.userId })
+        }
+
+        // Add tags for better filtering
+        if (entry.context.artistId) {
+          Sentry.setTag('artist_id', entry.context.artistId)
+        }
+        if (entry.context.eventId) {
+          Sentry.setTag('event_id', entry.context.eventId)
+        }
+      }
+
+      // Send errors and fatals to Sentry
+      if (entry.level === 'error' || entry.level === 'fatal') {
+        if (entry.error) {
+          // Reconstruct Error object
+          const error = new Error(entry.error.message)
+          error.name = entry.error.name
+          error.stack = entry.error.stack
+
+          Sentry.captureException(error, {
+            level: entry.level === 'fatal' ? 'fatal' : 'error',
+            extra: {
+              log_message: entry.message,
+              ...entry.context,
+            },
+          })
+        } else {
+          // No error object, send as message
+          Sentry.captureMessage(entry.message, {
+            level: entry.level === 'fatal' ? 'fatal' : 'error',
+            extra: entry.context,
+          })
+        }
+      } else {
+        // Add breadcrumb for info/warn/debug
+        Sentry.addBreadcrumb({
+          category: 'log',
+          message: entry.message,
+          level: entry.level === 'warn' ? 'warning' : entry.level,
+          data: entry.context,
+        })
+      }
+    }
+
+    // Can be extended to send logs to other services:
     // - Datadog (for all logs)
     // - CloudWatch (for AWS deployments)
     // - Custom logging endpoint
-
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Implement external logging
-      // Example: Sentry.captureException(entry.error)
-    }
   }
 
   // ============================================

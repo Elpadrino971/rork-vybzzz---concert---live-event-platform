@@ -44,10 +44,9 @@ export const CACHE_TTL = {
 
 /**
  * Creates a cached function with optional tags and revalidation time
- *
  * @example
  * const getEvents = cached(
- *   async () => { /* fetch events */ },
+ *   async () => fetchEvents(),
  *   ['events'],
  *   { revalidate: 60 }
  * )

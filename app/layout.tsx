@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { CookieConsent } from '@/components/legal/cookie-consent'
+import { I18nProvider } from '@/contexts/I18nContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,8 +19,10 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={inter.className}>
-        {children}
-        <CookieConsent />
+        <I18nProvider>
+          {children}
+          <CookieConsent />
+        </I18nProvider>
       </body>
     </html>
   )

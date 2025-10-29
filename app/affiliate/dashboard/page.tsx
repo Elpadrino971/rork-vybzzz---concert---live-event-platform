@@ -1,214 +1,281 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { format } from 'date-fns'
-import { fr } from 'date-fns/locale'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { format } from 'date-fns'
+import { fr, enUS, es, de, pt, zhCN } from 'date-fns/locale'
+import { useI18n } from '@/contexts/I18nContext'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
-export const dynamic = 'force-dynamic'
+interface AffiliateDashboardData {
+  affiliate: {
+    id: string
+    referral_code: string
+    level: number
+  }
+  referrals: Array<{
+    id: string
+    user: {
+      full_name: string
+    } | null
+    event: {
+      title: string
+    } | null
+    purchase_price: number
+    purchased_at: string
+  }>
+  stats: {
+    totalReferrals: number
+    pendingEarnings: number
+    paidEarnings: number
+  }
+}
 
-export default async function AffiliateDashboard() {
-  const supabase = await createClient()
+export default function AffiliateDashboard() {
+  const { t, locale } = useI18n()
+  const router = useRouter()
+  const [data, setData] = useState<AffiliateDashboardData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
 
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const dateLocales = { fr, en: enUS, es, de, pt, zh: zhCN }
 
-  if (!user) {
-    redirect('/auth/login?redirect=/affiliate/dashboard')
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  async function fetchDashboardData() {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/dashboard/affiliate')
+
+      if (response.status === 401) {
+        router.push('/auth/login?redirect=/affiliate/dashboard')
+        return
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard data')
+      }
+
+      const result = await response.json()
+      setData(result)
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Get affiliate info
-  const { data: affiliate } = await supabase
-    .from('affiliates')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  function copyReferralCode() {
+    if (!data?.affiliate.referral_code) return
 
-  if (!affiliate) {
+    navigator.clipboard.writeText(data.affiliate.referral_code)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 max-w-md text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Compte affilié requis
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-400">{t('common', 'states.loading')}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !data) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md text-center">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            {t('common', 'states.error')}
           </h2>
-          <p className="text-gray-600 mb-6">
-            Vous n'êtes pas encore inscrit au programme d'affiliation.
-          </p>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
           <Link
-            href="/affiliate/register"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold"
+            href="/"
+            className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
           >
-            Devenir affilié
+            {t('common', 'actions.back')}
           </Link>
         </div>
       </div>
     )
   }
 
-  // Get referrals
-  const { data: referrals } = await supabase
-    .from('tickets')
-    .select('*, event:events(title), user:profiles(full_name)')
-    .eq('affiliate_id', user.id)
-    .order('purchased_at', { ascending: false })
-    .limit(20)
-
-  // Get commissions
-  const { data: commissions } = await supabase
-    .from('affiliate_commissions')
-    .select('*')
-    .eq('affiliate_id', user.id)
-
-  const totalEarnings = commissions?.reduce(
-    (sum, c) => sum + parseFloat(c.commission_amount.toString()),
-    0
-  ) || 0
-
-  const pendingEarnings = commissions
-    ?.filter((c) => c.status === 'pending')
-    .reduce((sum, c) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
-
-  const paidEarnings = commissions
-    ?.filter((c) => c.status === 'paid')
-    .reduce((sum, c) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
       <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-4">Dashboard Affilié</h1>
-          <p className="text-blue-100 text-lg">
-            Programme d'affiliation à 3 niveaux
-          </p>
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-4xl font-bold mb-4">{t('dashboard', 'affiliate.title')}</h1>
+              <p className="text-blue-100 text-lg">
+                {t('dashboard', 'affiliate.subtitle')}
+              </p>
+              <p className="text-blue-200 text-sm mt-2">
+                {t('dashboard', 'affiliate.description')}
+              </p>
+            </div>
+            <LanguageSwitcher />
+          </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Referral Code Card */}
         <div className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl shadow-lg p-8 mb-8 text-white">
-          <h2 className="text-2xl font-bold mb-4">Votre code de parrainage</h2>
-          <div className="flex items-center gap-4">
+          <h2 className="text-2xl font-bold mb-4">
+            {t('dashboard', 'affiliate.referralCode.title')}
+          </h2>
+          <div className="flex items-center gap-4 flex-wrap">
             <div className="bg-white text-gray-800 px-6 py-4 rounded-lg font-mono text-2xl font-bold">
-              {affiliate.referral_code}
+              {data.affiliate.referral_code}
             </div>
             <button
-              onClick={() => {
-                navigator.clipboard.writeText(affiliate.referral_code)
-                alert('Code copié!')
-              }}
+              onClick={copyReferralCode}
               className="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-lg transition font-semibold"
             >
-              📋 Copier
+              📋 {copied ? t('dashboard', 'affiliate.referralCode.copied') : t('common', 'actions.copy')}
             </button>
           </div>
           <p className="mt-4 text-blue-100">
-            Partagez ce code avec vos amis pour gagner des commissions sur leurs achats!
+            {t('dashboard', 'affiliate.referralCode.share')}
+          </p>
+          <p className="mt-2 text-blue-50 font-semibold">
+            {t('dashboard', 'affiliate.referralCode.motivation')}
           </p>
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="text-gray-600 mb-2">Niveau</div>
-            <div className="text-3xl font-bold text-gray-800">Niveau {affiliate.level}</div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="text-gray-600 mb-2">Parrainages</div>
-            <div className="text-3xl font-bold text-gray-800">
-              {referrals?.length || 0}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <div className="text-gray-600 dark:text-gray-400 mb-2">
+              {t('dashboard', 'affiliate.stats.level')}
+            </div>
+            <div className="text-3xl font-bold text-gray-800 dark:text-white">
+              {t('dashboard', 'affiliate.stats.level')} {data.affiliate.level}
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="text-gray-600 mb-2">Gains en attente</div>
-            <div className="text-3xl font-bold text-orange-600">
-              {pendingEarnings.toFixed(2)}€
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <div className="text-gray-600 dark:text-gray-400 mb-2">
+              {t('dashboard', 'affiliate.stats.totalReferrals')}
+            </div>
+            <div className="text-3xl font-bold text-gray-800 dark:text-white">
+              {data.stats.totalReferrals}
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <div className="text-gray-600 mb-2">Gains payés</div>
-            <div className="text-3xl font-bold text-green-600">
-              {paidEarnings.toFixed(2)}€
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <div className="text-gray-600 dark:text-gray-400 mb-2">
+              {t('dashboard', 'affiliate.stats.pendingEarnings')}
+            </div>
+            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+              {data.stats.pendingEarnings.toFixed(2)}€
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <div className="text-gray-600 dark:text-gray-400 mb-2">
+              {t('dashboard', 'affiliate.stats.paidEarnings')}
+            </div>
+            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+              {data.stats.paidEarnings.toFixed(2)}€
             </div>
           </div>
         </div>
 
         {/* Commission Rates */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Taux de commission</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            {t('dashboard', 'affiliate.commissionRates.title')}
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border-2 border-blue-200 rounded-lg p-4">
-              <div className="text-blue-600 font-bold text-lg mb-2">Niveau 1</div>
-              <div className="text-3xl font-bold text-gray-800 mb-2">2.5%</div>
-              <p className="text-gray-600 text-sm">Référence directe</p>
+            <div className="border-2 border-blue-200 dark:border-blue-700 rounded-lg p-4">
+              <div className="text-blue-600 dark:text-blue-400 font-bold text-lg mb-2">
+                {t('dashboard', 'affiliate.commissionRates.level1')}
+              </div>
+              <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                {t('dashboard', 'affiliate.commissionRates.rate', { rate: '2.5' })}
+              </div>
             </div>
 
-            <div className="border-2 border-purple-200 rounded-lg p-4">
-              <div className="text-purple-600 font-bold text-lg mb-2">Niveau 2</div>
-              <div className="text-3xl font-bold text-gray-800 mb-2">1.5%</div>
-              <p className="text-gray-600 text-sm">Filleul de votre filleul</p>
+            <div className="border-2 border-purple-200 dark:border-purple-700 rounded-lg p-4">
+              <div className="text-purple-600 dark:text-purple-400 font-bold text-lg mb-2">
+                {t('dashboard', 'affiliate.commissionRates.level2')}
+              </div>
+              <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                {t('dashboard', 'affiliate.commissionRates.rate', { rate: '1.5' })}
+              </div>
             </div>
 
-            <div className="border-2 border-pink-200 rounded-lg p-4">
-              <div className="text-pink-600 font-bold text-lg mb-2">Niveau 3</div>
-              <div className="text-3xl font-bold text-gray-800 mb-2">1%</div>
-              <p className="text-gray-600 text-sm">Troisième niveau</p>
+            <div className="border-2 border-pink-200 dark:border-pink-700 rounded-lg p-4">
+              <div className="text-pink-600 dark:text-pink-400 font-bold text-lg mb-2">
+                {t('dashboard', 'affiliate.commissionRates.level3')}
+              </div>
+              <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                {t('dashboard', 'affiliate.commissionRates.rate', { rate: '1' })}
+              </div>
             </div>
           </div>
         </div>
 
         {/* Recent Referrals */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Parrainages récents
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
+            {t('dashboard', 'affiliate.recentReferrals.title')}
           </h2>
 
-          {!referrals || referrals.length === 0 ? (
+          {!data.referrals || data.referrals.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">🎯</div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                Aucun parrainage
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                {t('dashboard', 'affiliate.recentReferrals.noReferrals')}
               </h3>
-              <p className="text-gray-600">
-                Commencez à partager votre code de parrainage pour gagner des commissions!
+              <p className="text-gray-600 dark:text-gray-400">
+                {t('dashboard', 'affiliate.referralCode.share')}
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">
-                      Utilisateur
+                  <tr className="border-b border-gray-200 dark:border-gray-700">
+                    <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-semibold">
+                      {t('dashboard', 'affiliate.recentReferrals.user')}
                     </th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">
-                      Événement
+                    <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-semibold">
+                      {t('dashboard', 'affiliate.recentReferrals.event')}
                     </th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">
-                      Montant
+                    <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-semibold">
+                      {t('dashboard', 'affiliate.recentReferrals.amount')}
                     </th>
-                    <th className="text-left py-3 px-4 text-gray-600 font-semibold">
-                      Date
+                    <th className="text-left py-3 px-4 text-gray-600 dark:text-gray-400 font-semibold">
+                      {t('dashboard', 'affiliate.recentReferrals.date')}
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {referrals.map((referral) => (
-                    <tr key={referral.id} className="border-b border-gray-100">
-                      <td className="py-3 px-4">
-                        {referral.user?.full_name || 'Utilisateur'}
+                  {data.referrals.map((referral) => (
+                    <tr key={referral.id} className="border-b border-gray-100 dark:border-gray-700">
+                      <td className="py-3 px-4 text-gray-800 dark:text-gray-200">
+                        {referral.user?.full_name || 'User'}
                       </td>
-                      <td className="py-3 px-4">{referral.event?.title || 'N/A'}</td>
-                      <td className="py-3 px-4 font-semibold text-gray-800">
-                        {parseFloat(referral.purchase_price.toString()).toFixed(2)}€
+                      <td className="py-3 px-4 text-gray-800 dark:text-gray-200">
+                        {referral.event?.title || 'N/A'}
                       </td>
-                      <td className="py-3 px-4 text-gray-600">
+                      <td className="py-3 px-4 font-semibold text-gray-800 dark:text-white">
+                        {referral.purchase_price.toFixed(2)}€
+                      </td>
+                      <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
                         {format(new Date(referral.purchased_at), 'd MMM yyyy', {
-                          locale: fr,
+                          locale: dateLocales[locale],
                         })}
                       </td>
                     </tr>

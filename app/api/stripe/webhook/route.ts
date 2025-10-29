@@ -5,6 +5,47 @@ import { logger } from '@/lib/logger'
 import Stripe from 'stripe'
 
 /**
+ * Map Stripe price IDs to subscription tiers
+ */
+function getPriceIdToTierMap(): Record<string, 'starter' | 'pro' | 'elite'> {
+  const map: Record<string, 'starter' | 'pro' | 'elite'> = {}
+
+  if (process.env.STRIPE_PRICE_STARTER) {
+    map[process.env.STRIPE_PRICE_STARTER] = 'starter'
+  }
+  if (process.env.STRIPE_PRICE_PRO) {
+    map[process.env.STRIPE_PRICE_PRO] = 'pro'
+  }
+  if (process.env.STRIPE_PRICE_ELITE) {
+    map[process.env.STRIPE_PRICE_ELITE] = 'elite'
+  }
+
+  return map
+}
+
+/**
+ * Determine subscription tier from Stripe price ID
+ */
+function getTierFromPriceId(priceId: string, metadata?: Stripe.Metadata): 'starter' | 'pro' | 'elite' {
+  // First, try to map from price ID
+  const priceIdMap = getPriceIdToTierMap()
+  const tierFromPriceId = priceIdMap[priceId]
+
+  if (tierFromPriceId) {
+    return tierFromPriceId
+  }
+
+  // Fallback to metadata if price ID mapping fails
+  if (metadata?.tier && ['starter', 'pro', 'elite'].includes(metadata.tier)) {
+    return metadata.tier as 'starter' | 'pro' | 'elite'
+  }
+
+  // Default to starter if no mapping found
+  logger.warn('Unable to determine tier from price ID, defaulting to starter', { priceId, metadata })
+  return 'starter'
+}
+
+/**
  * Stripe Webhook Handler
  * POST /api/stripe/webhook
  *
@@ -239,15 +280,9 @@ export async function POST(request: NextRequest) {
           const status = subscription.status
           const currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString()
 
-          // Determine tier from price
+          // Determine tier from price ID
           const priceId = subscription.items.data[0].price.id
-          let tier: 'starter' | 'pro' | 'elite' = 'starter'
-
-          // TODO: Map price IDs to tiers
-          // For now, check metadata
-          if (subscription.metadata.tier) {
-            tier = subscription.metadata.tier as any
-          }
+          const tier = getTierFromPriceId(priceId, subscription.metadata)
 
           const { error: artistError } = await supabase
             .from('artists')

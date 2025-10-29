@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       commissions,
     })
   } catch (error: any) {
-    logger.error('Error fetching affiliate stats', { error: error.message, stack: error.stack })
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Error fetching affiliate stats', error instanceof Error ? error : new Error(String(error)))
+    return NextResponse.json({ error: error.message || 'Failed to fetch affiliate stats' }, { status: 500 })
   }
 }

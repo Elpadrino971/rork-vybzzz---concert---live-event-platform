@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 
 interface Message {
@@ -25,7 +25,6 @@ export default function EventChat({ eventId, userId }: EventChatProps) {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
 
   useEffect(() => {
     // Load initial messages
@@ -42,7 +41,7 @@ export default function EventChat({ eventId, userId }: EventChatProps) {
           table: 'event_messages',
           filter: `event_id=eq.${eventId}`,
         },
-        async (payload) => {
+        async (payload: any) => {
           // Fetch user info for the new message
           const { data: user } = await supabase
             .from('profiles')

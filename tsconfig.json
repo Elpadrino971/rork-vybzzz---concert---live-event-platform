@@ -23,5 +23,27 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "app/(tabs)/**",
+    "app/_layout.tsx",
+    "app/chat.tsx",
+    "app/create.tsx",
+    "app/dashboard.tsx",
+    "app/event/**",
+    "app/premium.tsx",
+    "app/profile/**",
+    "app/referral.tsx",
+    "app/settings.tsx",
+    "components/EventCard.tsx",
+    "components/VideoOverlay.tsx",
+    "components/VideoPlayer.tsx",
+    "hooks/language-context.tsx",
+    "hooks/theme-context.tsx",
+    "hooks/user-context.tsx",
+    "services/payment-service.ts",
+    "lib/stripe-mobile.ts",
+    "mocks/**",
+    "scripts/**"
+  ]
 }

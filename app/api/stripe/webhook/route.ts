@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err: any) {
-    logger.error('Webhook signature verification failed', { error: err.message })
+    logger.error('Webhook signature verification failed', err instanceof Error ? err : new Error(String(err)))
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -106,10 +106,10 @@ export async function POST(request: NextRequest) {
             .eq('id', ticket_id)
 
           if (ticketError) {
-            logger.error('Failed to update ticket status', {
+            logger.error('Failed to update ticket status', undefined, {
               ticketId: ticket_id,
               paymentIntentId: paymentIntent.id,
-              error: ticketError
+              errorMessage: ticketError.message
             })
             // Don't return - continue processing to increment attendees
           }
@@ -123,10 +123,10 @@ export async function POST(request: NextRequest) {
             .eq('id', event_id)
 
           if (attendeeError) {
-            logger.error('Failed to increment event attendees', {
+            logger.error('Failed to increment event attendees', undefined, {
               eventId: event_id,
               ticketId: ticket_id,
-              error: attendeeError
+              errorMessage: attendeeError.message
             })
           }
 
@@ -156,10 +156,10 @@ export async function POST(request: NextRequest) {
                 })
 
                 if (commissionError) {
-                  logger.error('Failed to create AA commission', {
+                  logger.error('Failed to create AA commission', undefined, {
                     ticketId: ticket_id,
                     aaId: aa_id,
-                    error: commissionError
+                    errorMessage: commissionError.message
                   })
                 }
 
@@ -175,9 +175,9 @@ export async function POST(request: NextRequest) {
                   .single()
 
                 if (rrError) {
-                  logger.error('Failed to fetch RR commission rate', {
+                  logger.error('Failed to fetch RR commission rate', undefined, {
                     rrId: rr_id,
-                    error: rrError
+                    errorMessage: rrError.message
                   })
                 } else if (rr) {
                   const { error: rrCommissionError } = await supabase.from('commissions').insert({
@@ -191,10 +191,10 @@ export async function POST(request: NextRequest) {
                   })
 
                   if (rrCommissionError) {
-                    logger.error('Failed to create RR commission', {
+                    logger.error('Failed to create RR commission', undefined, {
                       ticketId: ticket_id,
                       rrId: rr_id,
-                      error: rrCommissionError
+                      errorMessage: rrCommissionError.message
                     })
                   }
                 }
@@ -217,10 +217,10 @@ export async function POST(request: NextRequest) {
             .eq('id', tip_id)
 
           if (tipError) {
-            logger.error('Failed to update tip status', {
+            logger.error('Failed to update tip status', undefined, {
               tipId: tip_id,
               paymentIntentId: paymentIntent.id,
-              error: tipError
+              errorMessage: tipError.message
             })
           }
         }
@@ -241,10 +241,10 @@ export async function POST(request: NextRequest) {
             .eq('id', metadata.ticket_id)
 
           if (ticketError) {
-            logger.error('Failed to mark ticket as failed', {
+            logger.error('Failed to mark ticket as failed', undefined, {
               ticketId: metadata.ticket_id,
               paymentIntentId: paymentIntent.id,
-              error: ticketError
+              errorMessage: ticketError.message
             })
           }
         }
@@ -256,10 +256,10 @@ export async function POST(request: NextRequest) {
             .eq('id', metadata.tip_id)
 
           if (tipError) {
-            logger.error('Failed to mark tip as failed', {
+            logger.error('Failed to mark tip as failed', undefined, {
               tipId: metadata.tip_id,
               paymentIntentId: paymentIntent.id,
-              error: tipError
+              errorMessage: tipError.message
             })
           }
         }
@@ -297,11 +297,11 @@ export async function POST(request: NextRequest) {
             .eq('id', artistId)
 
           if (artistError) {
-            logger.error('Failed to update artist subscription', {
+            logger.error('Failed to update artist subscription', undefined, {
               artistId,
               subscriptionId: subscription.id,
               tier,
-              error: artistError
+              errorMessage: artistError.message
             })
           }
         }
@@ -324,10 +324,10 @@ export async function POST(request: NextRequest) {
             .eq('id', artistId)
 
           if (artistError) {
-            logger.error('Failed to downgrade artist subscription', {
+            logger.error('Failed to downgrade artist subscription', undefined, {
               artistId,
               subscriptionId: subscription.id,
-              error: artistError
+              errorMessage: artistError.message
             })
           }
         }
@@ -352,9 +352,9 @@ export async function POST(request: NextRequest) {
             .eq('stripe_account_id', account.id)
 
           if (accountError) {
-            logger.error('Failed to update artist Stripe account status', {
+            logger.error('Failed to update artist Stripe account status', undefined, {
               stripeAccountId: account.id,
-              error: accountError
+              errorMessage: accountError.message
             })
           }
         }
@@ -368,7 +368,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true })
   } catch (error: any) {
-    logger.error('Error processing webhook', { error: error.message, stack: error.stack })
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Error processing webhook', error instanceof Error ? error : new Error(String(error)))
+    return NextResponse.json({ error: error.message || 'Failed to process webhook' }, { status: 500 })
   }
 }

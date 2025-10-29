@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
     let shortsWithLikeStatus = shorts || []
 
     if (user && shorts && shorts.length > 0) {
-      const shortIds = shorts.map((s) => s.id)
+      const shortIds = shorts.map((s: any) => s.id)
 
       const { data: likes } = await supabase
         .from('short_likes')
@@ -128,9 +128,9 @@ export async function GET(request: NextRequest) {
         .eq('user_id', user.id)
         .in('short_id', shortIds)
 
-      const likedShortIds = new Set(likes?.map((l) => l.short_id) || [])
+      const likedShortIds = new Set(likes?.map((l: any) => l.short_id) || [])
 
-      shortsWithLikeStatus = shorts.map((short) => ({
+      shortsWithLikeStatus = shorts.map((short: any) => ({
         ...short,
         isLiked: likedShortIds.has(short.id),
       }))
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    logger.error('Unexpected error fetching shorts', error, { artistId, eventId, sortBy })
+    logger.error('Unexpected error fetching shorts', error instanceof Error ? error : new Error(String(error)))
     return NextResponse.json(
       { error: error.message || 'Failed to fetch shorts' },
       { status: 500 }

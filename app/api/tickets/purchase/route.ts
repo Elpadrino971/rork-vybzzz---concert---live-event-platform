@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    logger.error('Error purchasing ticket', { error: error.message, stack: error.stack })
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Error purchasing ticket', error instanceof Error ? error : new Error(String(error)))
+    return NextResponse.json({ error: error.message || 'Failed to purchase ticket' }, { status: 500 })
   }
 }

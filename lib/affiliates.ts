@@ -225,9 +225,9 @@ export async function getAffiliateStats(affiliateId: string) {
     .select('commission_amount, status')
     .eq('affiliate_id', affiliateId)
 
-  const totalEarnings = commissions?.reduce((sum, c) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
-  const pendingEarnings = commissions?.filter(c => c.status === 'pending').reduce((sum, c) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
-  const paidEarnings = commissions?.filter(c => c.status === 'paid').reduce((sum, c) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
+  const totalEarnings = commissions?.reduce((sum: number, c: any) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
+  const pendingEarnings = commissions?.filter((c: any) => c.status === 'pending').reduce((sum: number, c: any) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
+  const paidEarnings = commissions?.filter((c: any) => c.status === 'paid').reduce((sum: number, c: any) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
 
   return {
     totalReferrals: totalReferrals || 0,
@@ -255,7 +255,7 @@ export async function payoutAffiliateCommissions(affiliateId: string) {
   }
 
   const totalAmount = pendingCommissions.reduce(
-    (sum, c) => sum + parseFloat(c.commission_amount.toString()),
+    (sum: number, c: any) => sum + parseFloat(c.commission_amount.toString()),
     0
   )
 

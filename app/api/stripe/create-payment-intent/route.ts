@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
   } catch (error: any) {
-    logger.error('Error creating payment intent', { error: error.message, stack: error.stack })
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Error creating payment intent', error instanceof Error ? error : new Error(String(error)))
+    return NextResponse.json({ error: error.message || 'Failed to create payment intent' }, { status: 500 })
   }
 }

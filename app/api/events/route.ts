@@ -94,8 +94,8 @@ export async function GET(request: NextRequest) {
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    logger.error('Error fetching events', { error: error.message, stack: error.stack })
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Error fetching events', error instanceof Error ? error : new Error(String(error)))
+    return NextResponse.json({ error: error.message || 'Failed to fetch events' }, { status: 500 })
   }
 }
 
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    logger.error('Error creating event', { error: error.message, stack: error.stack })
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Error creating event', error instanceof Error ? error : new Error(String(error)))
+    return NextResponse.json({ error: error.message || 'Failed to create event' }, { status: 500 })
   }
 }

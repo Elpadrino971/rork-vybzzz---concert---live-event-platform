@@ -72,7 +72,7 @@ export async function POST(
       message: `Now following ${artist.stage_name}`,
     })
   } catch (error: any) {
-    logger.error('Error following artist', { error: error.message, stack: error.stack })
+    logger.error('Error following artist', error instanceof Error ? error : new Error(String(error)))
     return NextResponse.json(
       { error: error.message || 'Failed to follow artist' },
       { status: 500 }
@@ -132,7 +132,7 @@ export async function DELETE(
       message: 'Unfollowed artist',
     })
   } catch (error: any) {
-    logger.error('Error unfollowing artist', { error: error.message, stack: error.stack })
+    logger.error('Error unfollowing artist', error instanceof Error ? error : new Error(String(error)))
     return NextResponse.json(
       { error: error.message || 'Failed to unfollow artist' },
       { status: 500 }

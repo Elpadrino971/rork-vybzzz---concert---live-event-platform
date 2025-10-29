@@ -86,7 +86,7 @@ export async function DELETE(request: NextRequest): Promise<Response> {
         blockers.push(
           `You have ${activeEvents.length} active event(s). Please cancel them before deleting your account.`
         )
-        activeEvents.forEach((event) => {
+        activeEvents.forEach((event: any) => {
           blockers.push(`- ${event.title} (${event.status}, ${event.scheduled_at})`)
         })
       }
@@ -99,7 +99,7 @@ export async function DELETE(request: NextRequest): Promise<Response> {
         .in('status', ['pending', 'processing'])
 
       if (pendingPayouts && pendingPayouts.length > 0) {
-        const totalPending = pendingPayouts.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0)
+        const totalPending = pendingPayouts.reduce((sum: number, p: any) => sum + parseFloat(p.amount.toString()), 0)
         if (forceDelete) {
           warnings.push(
             `You are forfeiting €${totalPending.toFixed(2)} in pending payouts.`
@@ -129,7 +129,7 @@ export async function DELETE(request: NextRequest): Promise<Response> {
 
       if (pendingCommissions && pendingCommissions.length > 0) {
         const totalPending = pendingCommissions.reduce(
-          (sum, c) => sum + parseFloat(c.commission_amount.toString()),
+          (sum: number, c: any) => sum + parseFloat(c.commission_amount.toString()),
           0
         )
         warnings.push(
@@ -213,7 +213,7 @@ export async function DELETE(request: NextRequest): Promise<Response> {
       await supabase
         .from('tickets')
         .update({ status: 'cancelled' })
-        .in('id', pendingTickets.map((t) => t.id))
+        .in('id', pendingTickets.map((t: any) => t.id))
 
       warnings.push(`${pendingTickets.length} pending ticket(s) were cancelled.`)
     }
@@ -312,7 +312,7 @@ export async function GET(request: NextRequest): Promise<Response> {
         .in('status', ['pending', 'processing'])
 
       if (pendingPayouts && pendingPayouts.length > 0) {
-        const total = pendingPayouts.reduce((sum, p) => sum + parseFloat(p.amount.toString()), 0)
+        const total = pendingPayouts.reduce((sum: number, p: any) => sum + parseFloat(p.amount.toString()), 0)
         warnings.push(`€${total.toFixed(2)} in pending payouts will be forfeited`)
       }
     }

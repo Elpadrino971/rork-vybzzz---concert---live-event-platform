@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { rateLimitByIP } from '@/lib/rate-limit'
+import { rateLimit } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY
@@ -7,8 +7,8 @@ const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo'
 
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting: 10 requests per minute per IP
-    const rateLimitResult = await rateLimitByIP(request, 'chat')
+    // Rate limiting: 5 requests per minute per IP (strict)
+    const rateLimitResult = await rateLimit(request, 'strict')
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Too many requests. Please try again later.' },
@@ -79,9 +79,9 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      logger.error('OpenAI API error', {
+      logger.error('OpenAI API error', undefined, {
         status: response.status,
-        error: errorData
+        errorData: JSON.stringify(errorData)
       })
 
       return NextResponse.json(
@@ -93,7 +93,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
 
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      logger.error('Invalid OpenAI response format', { data })
+      logger.error('Invalid OpenAI response format', undefined, {
+        responseData: JSON.stringify(data)
+      })
       return NextResponse.json(
         { error: 'Invalid response from AI service' },
         { status: 500 }
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error('Chat API error', { error })
+    logger.error('Chat API error', error instanceof Error ? error : new Error(String(error)))
     return NextResponse.json(
       { error: 'An unexpected error occurred' },
       { status: 500 }

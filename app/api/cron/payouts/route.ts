@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
 
         // Calculate total revenue from tickets
         const totalRevenue =
-          tickets?.reduce((sum, t) => sum + parseFloat(t.purchase_price.toString()), 0) || 0
+          tickets?.reduce((sum: number, t: any) => sum + parseFloat(t.purchase_price.toString()), 0) || 0
 
         if (totalRevenue === 0) {
           logger.info('No revenue for event, skipping payout', {
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
         const { data: commissions, error: commissionsError } = await supabase
           .from('commissions')
           .select('id, commission_amount')
-          .in('ticket_id', tickets?.map((t) => t.id) || [])
+          .in('ticket_id', tickets?.map((t: any) => t.id) || [])
           .eq('status', 'pending')
 
         if (commissionsError) {
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
 
         // Calculate total commissions to deduct
         const totalCommissions =
-          commissions?.reduce((sum, c) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
+          commissions?.reduce((sum: number, c: any) => sum + parseFloat(c.commission_amount.toString()), 0) || 0
 
         // Final payout amount = artist revenue - commissions
         const payoutAmount = artistRevenue - totalCommissions
@@ -233,7 +233,7 @@ export async function GET(request: NextRequest) {
             await supabase
               .from('commissions')
               .update({ status: 'paid' })
-              .in('id', commissions.map((c) => c.id))
+              .in('id', commissions.map((c: any) => c.id))
           }
 
           logger.payment('payout_created', payoutAmount, {

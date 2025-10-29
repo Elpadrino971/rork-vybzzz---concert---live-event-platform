@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe-mobile'
+import { logger, createPerformanceTracker } from '@/lib/logger'
+import { env } from '@/lib/env'
 
 /**
  * Payout Cron Job - J+21
@@ -20,11 +22,17 @@ import { stripe } from '@/lib/stripe-mobile'
  */
 
 export async function GET(request: NextRequest) {
+  const tracker = createPerformanceTracker('cron_payouts')
+
   // Verify cron secret to prevent unauthorized access
   const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
+  const cronSecret = env.CRON_SECRET
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    logger.warn('Unauthorized cron access attempt', {
+      hasAuthHeader: !!authHeader,
+      hasCronSecret: !!cronSecret,
+    })
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -39,7 +47,9 @@ export async function GET(request: NextRequest) {
     const twentyOneDaysAgoEnd = new Date(twentyOneDaysAgo)
     twentyOneDaysAgoEnd.setHours(23, 59, 59, 999)
 
-    console.log('Processing payouts for events ended on:', twentyOneDaysAgo.toISOString())
+    logger.info('Starting payout cron job', {
+      targetDate: twentyOneDaysAgo.toISOString(),
+    })
 
     // Find all events that ended exactly 21 days ago
     const { data: events, error: eventsError } = await supabase
@@ -65,6 +75,9 @@ export async function GET(request: NextRequest) {
     }
 
     if (!events || events.length === 0) {
+      logger.info('No events to process for payouts', {
+        targetDate: twentyOneDaysAgo.toISOString(),
+      })
       return NextResponse.json({
         success: true,
         message: 'No events to process',
@@ -72,7 +85,10 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    console.log(`Found ${events.length} events to process`)
+    logger.info('Found events to process for payouts', {
+      eventCount: events.length,
+      targetDate: twentyOneDaysAgo.toISOString(),
+    })
 
     const results = []
     let successCount = 0
@@ -89,7 +105,10 @@ export async function GET(request: NextRequest) {
           .maybeSingle()
 
         if (existingPayout) {
-          console.log(`Payout already exists for event ${event.id}`)
+          logger.info('Payout already exists for event, skipping', {
+            eventId: event.id,
+            artistId: event.artist_id,
+          })
           continue
         }
 
@@ -109,7 +128,10 @@ export async function GET(request: NextRequest) {
           tickets?.reduce((sum, t) => sum + parseFloat(t.purchase_price.toString()), 0) || 0
 
         if (totalRevenue === 0) {
-          console.log(`No revenue for event ${event.id}, skipping payout`)
+          logger.info('No revenue for event, skipping payout', {
+            eventId: event.id,
+            artistId: event.artist_id,
+          })
           continue
         }
 
@@ -142,13 +164,22 @@ export async function GET(request: NextRequest) {
         const payoutAmount = artistRevenue - totalCommissions
 
         if (payoutAmount <= 0) {
-          console.log(`No payout amount for event ${event.id} after commissions`)
+          logger.info('No payout amount after commissions, skipping', {
+            eventId: event.id,
+            artistId: event.artist_id,
+            artistRevenue,
+            totalCommissions,
+          })
           continue
         }
 
         // Check if artist has Stripe Connect account
         if (!event.artist.stripe_account_id) {
-          console.log(`Artist ${event.artist_id} has no Stripe Connect account`)
+          logger.warn('Artist has no Stripe Connect account, skipping payout', {
+            eventId: event.id,
+            artistId: event.artist_id,
+            payoutAmount,
+          })
           continue
         }
 
@@ -205,7 +236,13 @@ export async function GET(request: NextRequest) {
               .in('id', commissions.map((c) => c.id))
           }
 
-          console.log(` Payout created for event ${event.id}: ${payoutAmount}¬`)
+          logger.payment('payout_created', payoutAmount, {
+            eventId: event.id,
+            artistId: event.artist_id,
+            payoutId: payout.id,
+            stripePayoutId: stripePayout.id,
+            commissionsCount: commissions?.length || 0,
+          })
           successCount++
           results.push({
             eventId: event.id,
@@ -214,7 +251,11 @@ export async function GET(request: NextRequest) {
             status: 'success',
           })
         } catch (stripeError: any) {
-          console.error(`Stripe payout failed for event ${event.id}:`, stripeError)
+          logger.error('Stripe payout failed', stripeError, {
+            eventId: event.id,
+            artistId: event.artist_id,
+            payoutAmount,
+          })
 
           // Update payout status to failed
           await supabase
@@ -235,7 +276,10 @@ export async function GET(request: NextRequest) {
           })
         }
       } catch (error: any) {
-        console.error(`Error processing payout for event ${event.id}:`, error)
+        logger.error('Error processing payout for event', error, {
+          eventId: event.id,
+          artistId: event.artist_id,
+        })
         errorCount++
         results.push({
           eventId: event.id,
@@ -246,6 +290,15 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const duration = tracker.end({ eventCount: events.length, successCount, errorCount })
+
+    logger.info('Payout cron job completed', {
+      totalEvents: events.length,
+      successCount,
+      errorCount,
+      duration,
+    })
+
     return NextResponse.json({
       success: true,
       message: `Processed ${events.length} events. ${successCount} successful, ${errorCount} failed.`,
@@ -255,7 +308,7 @@ export async function GET(request: NextRequest) {
       results,
     })
   } catch (error: any) {
-    console.error('Error in payout cron job:', error)
+    logger.error('Unexpected error in payout cron job', error)
     return NextResponse.json(
       { error: error.message || 'Failed to process payouts' },
       { status: 500 }

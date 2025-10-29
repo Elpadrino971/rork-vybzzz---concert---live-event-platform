@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
+import { CACHE_TTL, getCacheHeaders, invalidateCache, CACHE_TAGS } from '@/lib/cache'
+import { logger, createPerformanceTracker } from '@/lib/logger'
+import { z } from 'zod'
 
 // GET - Get a specific event
 export async function GET(
@@ -7,7 +11,25 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const tracker = createPerformanceTracker('get_event_detail')
+
+    // Rate limiting
+    const rateLimitResult = await rateLimit(request, 'public')
+    if (!rateLimitResult.success) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const { id } = await params
+
+    // UUID validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json({ error: 'Invalid event ID format' }, { status: 400 })
+    }
+
     const supabase = await createClient()
 
     const { data: event, error } = await supabase
@@ -17,6 +39,7 @@ export async function GET(
       .single()
 
     if (error || !event) {
+      logger.warn('Event not found', { eventId: id })
       return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
@@ -27,14 +50,30 @@ export async function GET(
       .eq('event_id', id)
       .eq('status', 'confirmed')
 
-    return NextResponse.json({
-      event: {
-        ...event,
-        current_attendees: ticketCount || 0,
-      },
+    const duration = tracker.end({ eventId: id, ticketCount: ticketCount || 0 })
+
+    logger.info('Event detail loaded', {
+      eventId: id,
+      artistId: event.artist_id,
+      ticketCount: ticketCount || 0,
+      duration,
     })
+
+    const response = NextResponse.json(
+      {
+        event: {
+          ...event,
+          current_attendees: ticketCount || 0,
+        },
+      },
+      {
+        headers: getCacheHeaders(CACHE_TTL.EVENT_DETAIL), // 300 seconds
+      }
+    )
+
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error fetching event:', error)
+    logger.error('Unexpected error fetching event', error, { eventId: id })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
@@ -49,7 +88,23 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Rate limiting
+    const rateLimitResult = await rateLimit(request, 'api')
+    if (!rateLimitResult.success) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const { id } = await params
+
+    // UUID validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json({ error: 'Invalid event ID format' }, { status: 400 })
+    }
+
     const supabase = await createClient()
 
     // Get current user
@@ -143,12 +198,23 @@ export async function PUT(
       .single()
 
     if (updateError) {
+      logger.error('Failed to update event', updateError, { eventId: id, userId: user.id })
       return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, event, message: 'Event updated successfully' })
+    // Invalidate cache
+    await invalidateCache([CACHE_TAGS.EVENTS, CACHE_TAGS.EVENT(id)])
+
+    logger.info('Event updated successfully', {
+      eventId: id,
+      userId: user.id,
+      artistId: event.artist_id,
+    })
+
+    const response = NextResponse.json({ success: true, event, message: 'Event updated successfully' })
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error updating event:', error)
+    logger.error('Unexpected error updating event', error, { eventId: id })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
@@ -159,7 +225,23 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Rate limiting
+    const rateLimitResult = await rateLimit(request, 'api')
+    if (!rateLimitResult.success) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const { id } = await params
+
+    // UUID validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(id)) {
+      return NextResponse.json({ error: 'Invalid event ID format' }, { status: 400 })
+    }
+
     const supabase = await createClient()
 
     // Get current user
@@ -213,13 +295,24 @@ export async function DELETE(
         .eq('id', id)
 
       if (cancelError) {
+        logger.error('Failed to cancel event', cancelError, { eventId: id, userId: user.id })
         return NextResponse.json({ error: cancelError.message }, { status: 500 })
       }
 
-      return NextResponse.json({
+      // Invalidate cache
+      await invalidateCache([CACHE_TAGS.EVENTS, CACHE_TAGS.EVENT(id)])
+
+      logger.info('Event cancelled (has existing tickets)', {
+        eventId: id,
+        userId: user.id,
+        ticketCount,
+      })
+
+      const response = NextResponse.json({
         success: true,
         message: 'Event cancelled (has existing tickets)',
       })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Delete event (no tickets)
@@ -229,12 +322,22 @@ export async function DELETE(
       .eq('id', id)
 
     if (deleteError) {
+      logger.error('Failed to delete event', deleteError, { eventId: id, userId: user.id })
       return NextResponse.json({ error: deleteError.message }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, message: 'Event deleted' })
+    // Invalidate cache
+    await invalidateCache([CACHE_TAGS.EVENTS, CACHE_TAGS.EVENT(id)])
+
+    logger.info('Event deleted successfully', {
+      eventId: id,
+      userId: user.id,
+    })
+
+    const response = NextResponse.json({ success: true, message: 'Event deleted' })
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error deleting event:', error)
+    logger.error('Unexpected error deleting event', error, { eventId: id })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

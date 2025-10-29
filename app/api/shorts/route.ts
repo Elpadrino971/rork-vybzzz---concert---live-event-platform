@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
+import { CACHE_TTL, getCacheHeaders } from '@/lib/cache'
+import { logger, createPerformanceTracker } from '@/lib/logger'
 
 /**
  * Shorts Feed API (TikTok-style vertical video feed)
@@ -9,19 +12,45 @@ import { createClient } from '@/lib/supabase/server'
  * Displayed in a vertical swipeable feed (TikTok/Reels style)
  */
 export async function GET(request: NextRequest) {
-  const supabase = await createClient()
-  const { searchParams } = new URL(request.url)
-
-  // Pagination
-  const limit = parseInt(searchParams.get('limit') || '10')
-  const offset = parseInt(searchParams.get('offset') || '0')
-
-  // Filters
-  const artistId = searchParams.get('artist_id')
-  const eventId = searchParams.get('event_id')
-  const sortBy = searchParams.get('sort') || 'recent' // recent, popular, trending
-
   try {
+    const tracker = createPerformanceTracker('shorts_feed')
+
+    // Rate limiting
+    const rateLimitResult = await rateLimit(request, 'public')
+    if (!rateLimitResult.success) {
+      return new Response(JSON.stringify({ error: 'Too many requests' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    const supabase = await createClient()
+    const { searchParams } = new URL(request.url)
+
+    // Input validation - Pagination
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '10'), 1), 50) // Max 50
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0'), 0)
+
+    // Input validation - Filters
+    const artistId = searchParams.get('artist_id')
+    const eventId = searchParams.get('event_id')
+    const sortBy = searchParams.get('sort') || 'recent'
+
+    // UUID validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (artistId && !uuidRegex.test(artistId)) {
+      return NextResponse.json({ error: 'Invalid artist ID format' }, { status: 400 })
+    }
+    if (eventId && !uuidRegex.test(eventId)) {
+      return NextResponse.json({ error: 'Invalid event ID format' }, { status: 400 })
+    }
+
+    // Whitelist validation for sortBy
+    const validSortOptions = ['recent', 'popular', 'trending']
+    if (!validSortOptions.includes(sortBy)) {
+      return NextResponse.json({ error: 'Invalid sort parameter' }, { status: 400 })
+    }
+
     let query = supabase
       .from('shorts')
       .select(`
@@ -78,7 +107,10 @@ export async function GET(request: NextRequest) {
 
     const { data: shorts, error, count } = await query
 
-    if (error) throw error
+    if (error) {
+      logger.error('Failed to fetch shorts', error, { artistId, eventId, sortBy })
+      throw error
+    }
 
     // Check if user has liked each short (if authenticated)
     const {
@@ -104,15 +136,34 @@ export async function GET(request: NextRequest) {
       }))
     }
 
-    return NextResponse.json({
-      shorts: shortsWithLikeStatus,
-      total: count || 0,
+    const duration = tracker.end({ artistId, eventId, sortBy, count: count || 0 })
+
+    logger.info('Shorts feed loaded', {
+      artistId,
+      eventId,
+      sortBy,
+      count: count || 0,
       limit,
       offset,
-      hasMore: (count || 0) > offset + limit,
+      duration,
     })
+
+    const response = NextResponse.json(
+      {
+        shorts: shortsWithLikeStatus,
+        total: count || 0,
+        limit,
+        offset,
+        hasMore: (count || 0) > offset + limit,
+      },
+      {
+        headers: getCacheHeaders(CACHE_TTL.EVENTS_LIST), // 60 seconds
+      }
+    )
+
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error fetching shorts:', error)
+    logger.error('Unexpected error fetching shorts', error, { artistId, eventId, sortBy })
     return NextResponse.json(
       { error: error.message || 'Failed to fetch shorts' },
       { status: 500 }

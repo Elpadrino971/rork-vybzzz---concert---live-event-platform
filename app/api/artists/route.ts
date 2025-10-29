@@ -1,23 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
+import { CACHE_TTL, getCacheHeaders } from '@/lib/cache'
+import { logger } from '@/lib/logger'
 
 /**
  * Artists API
  * GET /api/artists - Get all artists with search and filters
+ * Rate limit: 60 requests per minute (public)
  */
 export async function GET(request: NextRequest) {
-  const supabase = await createClient()
-  const { searchParams } = new URL(request.url)
-
-  // Search and filters
-  const search = searchParams.get('search')
-  const genre = searchParams.get('genre')
-  const country = searchParams.get('country')
-  const sortBy = searchParams.get('sort') || 'followers'
-  const limit = parseInt(searchParams.get('limit') || '20')
-  const offset = parseInt(searchParams.get('offset') || '0')
-
   try {
+    // ✅ SÉCURITÉ: Rate limiting
+    const rateLimitResult = await rateLimit(request, 'public')
+
+    if (!rateLimitResult.success) {
+      const response = new Response(
+        JSON.stringify({
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil(
+              (rateLimitResult.reset - Date.now()) / 1000
+            ).toString(),
+          },
+        }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
+
+    const supabase = await createClient()
+    const { searchParams } = new URL(request.url)
+
+    // Search and filters with validation
+    const search = searchParams.get('search')?.slice(0, 100) // Max 100 chars
+    const genre = searchParams.get('genre')?.slice(0, 50)
+    const country = searchParams.get('country')?.slice(0, 2) // ISO country code
+    const sortBy = searchParams.get('sort') || 'followers'
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100) // Max 100
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0'), 0) // Min 0
+
+    // ✅ SÉCURITÉ: Validate sortBy to prevent injection
+    const validSortOptions = ['followers', 'events', 'name', 'recent']
+    if (!validSortOptions.includes(sortBy)) {
+      const response = NextResponse.json(
+        { error: 'Invalid sort parameter' },
+        { status: 400 }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
+
     let query = supabase
       .from('artists')
       .select(`
@@ -73,18 +109,33 @@ export async function GET(request: NextRequest) {
 
     const { data: artists, error, count } = await query
 
-    if (error) throw error
+    if (error) {
+      logger.error('Error fetching artists from database', error)
+      const response = NextResponse.json(
+        { error: 'Failed to fetch artists' },
+        { status: 500 }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
 
-    return NextResponse.json({
-      artists: artists || [],
-      total: count || 0,
-      limit,
-      offset,
-    })
+    // ✅ PERFORMANCE: Cache headers
+    const response = NextResponse.json(
+      {
+        artists: artists || [],
+        total: count || 0,
+        limit,
+        offset,
+      },
+      {
+        headers: getCacheHeaders(CACHE_TTL.ARTISTS_LIST),
+      }
+    )
+
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error fetching artists:', error)
+    logger.error('Unexpected error in artists API', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch artists' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }

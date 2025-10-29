@@ -1,9 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { registerAffiliate } from '@/lib/affiliates'
+import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
+import { z } from 'zod'
 
+/**
+ * POST /api/affiliates/register - Register as affiliate (AA)
+ * Rate limit: 5 requests per minute (strict - financial operation)
+ */
 export async function POST(request: NextRequest) {
   try {
+    // ✅ SÉCURITÉ: Rate limiting strict (financial operation)
+    const rateLimitResult = await rateLimit(request, 'strict')
+
+    if (!rateLimitResult.success) {
+      const response = new Response(
+        JSON.stringify({
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil(
+              (rateLimitResult.reset - Date.now()) / 1000
+            ).toString(),
+          },
+        }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
+
     const supabase = await createClient()
 
     // Get current user
@@ -13,10 +42,33 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    const { parentReferralCode } = await request.json()
+    const body = await request.json()
+
+    // ✅ SÉCURITÉ: Validate input
+    const RegisterAffiliateSchema = z.object({
+      parentReferralCode: z.string().min(8).max(8).optional(),
+    })
+
+    const validation = RegisterAffiliateSchema.safeParse(body)
+    if (!validation.success) {
+      const response = NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: validation.error.errors.map((e) => ({
+            field: e.path.join('.'),
+            message: e.message,
+          })),
+        },
+        { status: 400 }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
+
+    const { parentReferralCode } = validation.data
 
     // Check if user is already an affiliate
     const { data: existingAffiliate } = await supabase
@@ -26,25 +78,40 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingAffiliate) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'User is already an affiliate' },
         { status: 400 }
       )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Register as affiliate
     const result = await registerAffiliate(user.id, parentReferralCode)
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 })
+      logger.error('Failed to register affiliate', undefined, {
+        userId: user.id,
+        error: result.error,
+      })
+      const response = NextResponse.json({ error: result.error }, { status: 500 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    return NextResponse.json({
+    logger.info('Affiliate registered successfully', {
+      userId: user.id,
+      affiliateId: result.affiliate?.id,
+      referralCode: result.affiliate?.referral_code,
+      parentReferralCode,
+    })
+
+    const response = NextResponse.json({
       success: true,
       affiliate: result.affiliate,
     })
+
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error registering affiliate:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    logger.error('Unexpected error registering affiliate', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

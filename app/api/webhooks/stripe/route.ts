@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
+import { confirmTicketPurchase, completeTipPayment, cancelTicket } from '@/lib/supabase-rpc'
+import { logger } from '@/lib/logger'
 import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
+    logger.error('Webhook signature verification failed', err)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -35,7 +37,10 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (existingEvent) {
-    console.log(`Webhook event ${event.id} already processed, skipping`)
+    logger.info('Webhook event already processed, skipping', {
+      eventId: event.id,
+      eventType: event.type,
+    })
     return NextResponse.json({ received: true, skipped: true })
   }
 
@@ -52,12 +57,21 @@ export async function POST(request: NextRequest) {
   if (eventInsertError) {
     // If insert fails due to unique constraint, event was already processed by another request
     if (eventInsertError.code === '23505') {
-      console.log(`Webhook event ${event.id} already processed (race condition), skipping`)
+      logger.info('Webhook event already processed (race condition), skipping', {
+        eventId: event.id,
+        eventType: event.type,
+      })
       return NextResponse.json({ received: true, skipped: true })
     }
-    console.error('Error storing webhook event:', eventInsertError)
+    logger.error('Error storing webhook event', eventInsertError, {
+      eventId: event.id,
+      eventType: event.type,
+    })
     // Continue processing even if storing fails (better than missing the event)
   }
+
+  // Log webhook received
+  logger.webhook('stripe', event.type, event.id)
 
   try {
     switch (event.type) {
@@ -66,56 +80,57 @@ export async function POST(request: NextRequest) {
         const metadata = paymentIntent.metadata
 
         if (metadata.type === 'ticket_purchase') {
-          // Update ticket status
-          const { error: ticketError } = await supabase
-            .from('tickets')
-            .update({ status: 'confirmed' })
-            .eq('payment_intent_id', paymentIntent.id)
+          // ✅ AMÉLIORATION: Atomic transaction via RPC
+          const result = await confirmTicketPurchase(paymentIntent.id)
 
-          if (ticketError) {
-            console.error('Error updating ticket:', ticketError)
-          }
+          if (!result.success) {
+            logger.error('Failed to confirm ticket purchase', undefined, {
+              paymentIntentId: paymentIntent.id,
+              error: result.error,
+            })
+            // Still return 200 to Stripe to avoid retries
+          } else {
+            logger.payment('ticket_confirmed', paymentIntent.amount / 100, {
+              ticketId: result.data?.ticket_id,
+              eventId: result.data?.event_id,
+              paymentIntentId: paymentIntent.id,
+            })
 
-          // Update event attendee count
-          const { data: ticket } = await supabase
-            .from('tickets')
-            .select('event_id')
-            .eq('payment_intent_id', paymentIntent.id)
-            .single()
-
-          if (ticket) {
-            await supabase.rpc('increment_event_attendees', {
-              event_id: ticket.event_id,
+            // Create transaction record for accounting
+            await supabase.from('transactions').insert({
+              transaction_type: 'ticket_purchase',
+              amount: paymentIntent.amount / 100,
+              currency: paymentIntent.currency.toUpperCase(),
+              stripe_payment_id: paymentIntent.id,
+              status: 'completed',
+              metadata: {
+                ticket_id: result.data?.ticket_id,
+                event_id: result.data?.event_id,
+              },
             })
           }
-
-          // Create transaction record
-          await supabase.from('transactions').insert({
-            transaction_type: 'ticket_purchase',
-            amount: paymentIntent.amount / 100,
-            currency: paymentIntent.currency.toUpperCase(),
-            stripe_payment_id: paymentIntent.id,
-            status: 'completed',
-            metadata: {
-              ticket_id: metadata.ticket_id,
-            },
-          })
         } else if (metadata.type === 'tip') {
-          // Update tip status
-          const { error: tipError } = await supabase
-            .from('tips')
-            .update({ status: 'completed' })
-            .eq('payment_intent_id', paymentIntent.id)
+          // ✅ AMÉLIORATION: Atomic transaction via RPC
+          const result = await completeTipPayment(paymentIntent.id)
 
-          if (tipError) {
-            console.error('Error updating tip:', tipError)
+          if (!result.success) {
+            logger.error('Failed to complete tip payment', undefined, {
+              paymentIntentId: paymentIntent.id,
+              error: result.error,
+            })
+          } else {
+            logger.payment('tip_completed', paymentIntent.amount / 100, {
+              tipId: result.data?.tip_id,
+              artistId: result.data?.artist_id,
+              paymentIntentId: paymentIntent.id,
+            })
+
+            // Update transaction record
+            await supabase
+              .from('transactions')
+              .update({ status: 'completed' })
+              .eq('stripe_payment_id', paymentIntent.id)
           }
-
-          // Update transaction record
-          await supabase
-            .from('transactions')
-            .update({ status: 'completed' })
-            .eq('stripe_payment_id', paymentIntent.id)
         }
 
         break
@@ -206,12 +221,18 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        logger.info('Unhandled webhook event type', {
+          eventType: event.type,
+          eventId: event.id,
+        })
     }
 
     return NextResponse.json({ received: true })
   } catch (error: any) {
-    console.error('Error processing webhook:', error)
+    logger.error('Error processing webhook', error, {
+      eventType: event.type,
+      eventId: event.id,
+    })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

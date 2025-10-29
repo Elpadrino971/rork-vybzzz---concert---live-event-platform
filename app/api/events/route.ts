@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { CreateEventSchema, validateRequest, formatZodErrors } from '@/lib/validations'
 import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
+import { CACHE_TTL, getCacheHeaders, invalidateCache, CACHE_TAGS } from '@/lib/cache'
 
 /**
  * Events API
@@ -77,12 +78,18 @@ export async function GET(request: NextRequest) {
       return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    const response = NextResponse.json({
-      events: data,
-      total: count,
-      limit,
-      offset,
-    })
+    // ✅ AMÉLIORATION: Cache headers for better performance
+    const response = NextResponse.json(
+      {
+        events: data,
+        total: count,
+        limit,
+        offset,
+      },
+      {
+        headers: getCacheHeaders(CACHE_TTL.EVENTS_LIST),
+      }
+    )
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
@@ -283,6 +290,9 @@ export async function POST(request: NextRequest) {
       const response = NextResponse.json({ error: eventError.message }, { status: 500 })
       return addRateLimitHeaders(response, rateLimitResult)
     }
+
+    // ✅ AMÉLIORATION: Invalidate cache after creating event
+    await invalidateCache([CACHE_TAGS.EVENTS])
 
     const response = NextResponse.json(
       { success: true, event, message: 'Event created successfully' },

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createTipPaymentIntent } from '@/lib/stripe'
 import { CreateTipSchema, validateRequest, formatZodErrors } from '@/lib/validations'
 import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 /**
  * POST /api/tips/create - Create a tip for an artist
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error creating tip:', error)
+    logger.error('Error creating tip', { error: error.message, stack: error.stack })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

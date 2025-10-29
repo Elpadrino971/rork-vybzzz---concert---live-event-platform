@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createTicketPaymentIntent, createTipPaymentIntent, eurosToCents } from '@/lib/stripe-mobile'
+import { logger } from '@/lib/logger'
 
 /**
  * Create Stripe Payment Intent (for tickets or tips)
@@ -187,7 +188,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
   } catch (error: any) {
-    console.error('Error creating payment intent:', error)
+    logger.error('Error creating payment intent', { error: error.message, stack: error.stack })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

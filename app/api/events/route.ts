@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { CreateEventSchema, validateRequest, formatZodErrors } from '@/lib/validations'
 import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
 import { CACHE_TTL, getCacheHeaders, invalidateCache, CACHE_TAGS } from '@/lib/cache'
+import { logger } from '@/lib/logger'
 
 /**
  * Events API
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest) {
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error fetching events:', error)
+    logger.error('Error fetching events', { error: error.message, stack: error.stack })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
@@ -301,7 +302,7 @@ export async function POST(request: NextRequest) {
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error creating event:', error)
+    logger.error('Error creating event', { error: error.message, stack: error.stack })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

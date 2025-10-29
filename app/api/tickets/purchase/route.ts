@@ -5,6 +5,7 @@ import { getTicketPrice } from '@/lib/happy-hour'
 import { calculateAffiliateCommissions } from '@/lib/affiliates'
 import { PurchaseTicketSchema, validateRequest, formatZodErrors } from '@/lib/validations'
 import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
+import { logger } from '@/lib/logger'
 
 /**
  * POST /api/tickets/purchase - Purchase a ticket for an event
@@ -274,7 +275,7 @@ export async function POST(request: NextRequest) {
 
     return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
-    console.error('Error purchasing ticket:', error)
+    logger.error('Error purchasing ticket', { error: error.message, stack: error.stack })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

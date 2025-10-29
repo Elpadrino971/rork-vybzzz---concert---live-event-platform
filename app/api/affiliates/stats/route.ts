@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 import { getAffiliateStats } from '@/lib/affiliates'
 
 export async function GET(request: NextRequest) {
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest) {
       commissions,
     })
   } catch (error: any) {
-    console.error('Error fetching affiliate stats:', error)
+    logger.error('Error fetching affiliate stats', { error: error.message, stack: error.stack })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

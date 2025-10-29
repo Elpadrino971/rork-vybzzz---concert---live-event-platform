@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 
 /**
  * Artist Follow/Unfollow API
@@ -71,7 +72,7 @@ export async function POST(
       message: `Now following ${artist.stage_name}`,
     })
   } catch (error: any) {
-    console.error('Error following artist:', error)
+    logger.error('Error following artist', { error: error.message, stack: error.stack })
     return NextResponse.json(
       { error: error.message || 'Failed to follow artist' },
       { status: 500 }
@@ -131,7 +132,7 @@ export async function DELETE(
       message: 'Unfollowed artist',
     })
   } catch (error: any) {
-    console.error('Error unfollowing artist:', error)
+    logger.error('Error unfollowing artist', { error: error.message, stack: error.stack })
     return NextResponse.json(
       { error: error.message || 'Failed to unfollow artist' },
       { status: 500 }

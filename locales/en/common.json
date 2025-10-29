@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "home": "Home",
+    "discover": "Discover",
+    "events": "Events",
+    "artists": "Artists",
+    "tickets": "Tickets",
+    "profile": "Profile",
+    "settings": "Settings",
+    "dashboard": "Dashboard"
+  },
+  "actions": {
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "copy": "Copy",
+    "share": "Share",
+    "close": "Close",
+    "submit": "Submit",
+    "confirm": "Confirm"
+  },
+  "states": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "noData": "No data",
+    "empty": "Empty"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "thisYear": "This year"
+  },
+  "currency": {
+    "symbol": "€",
+    "format": "€{{amount}}"
+  }
+}

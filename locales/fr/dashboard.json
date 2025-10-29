@@ -1,0 +1,120 @@
+{
+  "artist": {
+    "title": "Tableau de bord Artiste",
+    "welcome": "Bienvenue, {{name}}",
+    "createEvent": "Créer un événement",
+    "stats": {
+      "totalEvents": "Total événements",
+      "ticketsSold": "Billets vendus",
+      "totalRevenue": "Revenu total",
+      "stripeStatus": "Statut Stripe"
+    },
+    "stripeConnect": {
+      "complete": "Connecté",
+      "incomplete": "Configuration requise",
+      "setup": "Configurer Stripe Connect"
+    },
+    "events": {
+      "title": "Mes événements",
+      "noEvents": "Aucun événement créé",
+      "status": {
+        "live": "EN DIRECT",
+        "scheduled": "PLANIFIÉ",
+        "draft": "BROUILLON",
+        "ended": "TERMINÉ",
+        "cancelled": "ANNULÉ"
+      },
+      "attendees": "{{count}} participant(s)",
+      "price": "Prix du billet"
+    },
+    "analytics": {
+      "title": "Statistiques",
+      "revenue": "Revenu",
+      "artistShare": "Part artiste",
+      "platformShare": "Part plateforme",
+      "tips": "Pourboires",
+      "payouts": "Paiements",
+      "nextPayout": "Prochain paiement",
+      "lastPayout": "Dernier paiement"
+    }
+  },
+  "affiliate": {
+    "title": "Tableau de bord Apporteur d'Affaires",
+    "subtitle": "Programme d'affiliation à 3 niveaux",
+    "description": "Gagnez des commissions sur les ventes de billets en parrainant des utilisateurs",
+    "referralCode": {
+      "title": "Votre code de parrainage",
+      "code": "Code",
+      "copied": "Code copié !",
+      "share": "Partagez ce code avec vos contacts pour gagner des commissions",
+      "motivation": "Chaque ticket acheté avec votre code génère des commissions !"
+    },
+    "stats": {
+      "level": "Niveau",
+      "totalReferrals": "Total parrainages",
+      "pendingEarnings": "Gains en attente",
+      "paidEarnings": "Gains payés"
+    },
+    "commissionRates": {
+      "title": "Taux de commission",
+      "level1": "Niveau 1 (Direct)",
+      "level2": "Niveau 2 (Filleuls)",
+      "level3": "Niveau 3 (Petits-filleuls)",
+      "rate": "{{rate}}% par billet"
+    },
+    "recentReferrals": {
+      "title": "Parrainages récents",
+      "user": "Utilisateur",
+      "event": "Événement",
+      "amount": "Montant",
+      "date": "Date",
+      "noReferrals": "Aucun parrainage pour le moment"
+    }
+  },
+  "fan": {
+    "title": "Mon espace",
+    "welcome": "Bienvenue, {{name}}",
+    "stats": {
+      "upcomingEvents": "Événements à venir",
+      "pastEvents": "Événements passés",
+      "followedArtists": "Artistes suivis",
+      "totalSpent": "Dépenses totales"
+    },
+    "upcomingTickets": {
+      "title": "Mes billets à venir",
+      "noTickets": "Aucun billet à venir",
+      "viewTicket": "Voir le billet",
+      "eventDate": "Date de l'événement"
+    },
+    "pastTickets": {
+      "title": "Événements passés",
+      "noPastTickets": "Aucun événement passé",
+      "attended": "Assisté le {{date}}"
+    },
+    "followedArtists": {
+      "title": "Artistes que je suis",
+      "noArtists": "Vous ne suivez aucun artiste",
+      "followers": "{{count}} abonné(s)",
+      "unfollow": "Ne plus suivre"
+    },
+    "spending": {
+      "title": "Mes dépenses",
+      "tickets": "Billets",
+      "tips": "Pourboires",
+      "total": "Total"
+    },
+    "recentActivity": {
+      "title": "Activité récente",
+      "noActivity": "Aucune activité récente"
+    }
+  },
+  "regional": {
+    "title": "Tableau de bord Responsable Régional",
+    "stats": {
+      "ticketSales": "Ventes de billets",
+      "attendanceRate": "Taux de présence",
+      "revenue": "Revenu",
+      "localArtists": "Artistes locaux"
+    }
+  }
+}

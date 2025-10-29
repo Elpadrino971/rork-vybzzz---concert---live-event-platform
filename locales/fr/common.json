@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "discover": "Découvrir",
+    "events": "Événements",
+    "artists": "Artistes",
+    "tickets": "Billets",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "dashboard": "Tableau de bord"
+  },
+  "actions": {
+    "back": "Retour",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "create": "Créer",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "copy": "Copier",
+    "share": "Partager",
+    "close": "Fermer",
+    "submit": "Soumettre",
+    "confirm": "Confirmer"
+  },
+  "states": {
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "noData": "Aucune donnée",
+    "empty": "Vide"
+  },
+  "time": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "tomorrow": "Demain",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci",
+    "thisYear": "Cette année"
+  },
+  "currency": {
+    "symbol": "€",
+    "format": "{{amount}} €"
+  }
+}

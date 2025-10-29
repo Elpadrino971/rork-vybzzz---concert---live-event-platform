@@ -1,0 +1,120 @@
+{
+  "artist": {
+    "title": "Panel del Artista",
+    "welcome": "Bienvenido, {{name}}",
+    "createEvent": "Crear Evento",
+    "stats": {
+      "totalEvents": "Total de Eventos",
+      "ticketsSold": "Entradas Vendidas",
+      "totalRevenue": "Ingresos Totales",
+      "stripeStatus": "Estado de Stripe"
+    },
+    "stripeConnect": {
+      "complete": "Conectado",
+      "incomplete": "Configuración Requerida",
+      "setup": "Configurar Stripe Connect"
+    },
+    "events": {
+      "title": "Mis Eventos",
+      "noEvents": "No hay eventos creados",
+      "status": {
+        "live": "EN VIVO",
+        "scheduled": "PROGRAMADO",
+        "draft": "BORRADOR",
+        "ended": "FINALIZADO",
+        "cancelled": "CANCELADO"
+      },
+      "attendees": "{{count}} asistente(s)",
+      "price": "Precio de Entrada"
+    },
+    "analytics": {
+      "title": "Estadísticas",
+      "revenue": "Ingresos",
+      "artistShare": "Parte del Artista",
+      "platformShare": "Parte de la Plataforma",
+      "tips": "Propinas",
+      "payouts": "Pagos",
+      "nextPayout": "Próximo Pago",
+      "lastPayout": "Último Pago"
+    }
+  },
+  "affiliate": {
+    "title": "Panel de Afiliado",
+    "subtitle": "Programa de Afiliados de 3 Niveles",
+    "description": "Gana comisiones en ventas de entradas al referir usuarios",
+    "referralCode": {
+      "title": "Tu Código de Referencia",
+      "code": "Código",
+      "copied": "¡Código copiado!",
+      "share": "Comparte este código con tus contactos para ganar comisiones",
+      "motivation": "¡Cada entrada comprada con tu código genera comisiones!"
+    },
+    "stats": {
+      "level": "Nivel",
+      "totalReferrals": "Total de Referencias",
+      "pendingEarnings": "Ganancias Pendientes",
+      "paidEarnings": "Ganancias Pagadas"
+    },
+    "commissionRates": {
+      "title": "Tasas de Comisión",
+      "level1": "Nivel 1 (Directo)",
+      "level2": "Nivel 2 (Sub-referencias)",
+      "level3": "Nivel 3 (Sub-sub-referencias)",
+      "rate": "{{rate}}% por entrada"
+    },
+    "recentReferrals": {
+      "title": "Referencias Recientes",
+      "user": "Usuario",
+      "event": "Evento",
+      "amount": "Monto",
+      "date": "Fecha",
+      "noReferrals": "No hay referencias aún"
+    }
+  },
+  "fan": {
+    "title": "Mi Espacio",
+    "welcome": "Bienvenido, {{name}}",
+    "stats": {
+      "upcomingEvents": "Eventos Próximos",
+      "pastEvents": "Eventos Pasados",
+      "followedArtists": "Artistas Seguidos",
+      "totalSpent": "Total Gastado"
+    },
+    "upcomingTickets": {
+      "title": "Mis Próximas Entradas",
+      "noTickets": "No hay entradas próximas",
+      "viewTicket": "Ver Entrada",
+      "eventDate": "Fecha del Evento"
+    },
+    "pastTickets": {
+      "title": "Eventos Pasados",
+      "noPastTickets": "No hay eventos pasados",
+      "attended": "Asistido el {{date}}"
+    },
+    "followedArtists": {
+      "title": "Artistas que Sigo",
+      "noArtists": "No sigues a ningún artista",
+      "followers": "{{count}} seguidor(es)",
+      "unfollow": "Dejar de Seguir"
+    },
+    "spending": {
+      "title": "Mis Gastos",
+      "tickets": "Entradas",
+      "tips": "Propinas",
+      "total": "Total"
+    },
+    "recentActivity": {
+      "title": "Actividad Reciente",
+      "noActivity": "No hay actividad reciente"
+    }
+  },
+  "regional": {
+    "title": "Panel del Responsable Regional",
+    "stats": {
+      "ticketSales": "Ventas de Entradas",
+      "attendanceRate": "Tasa de Asistencia",
+      "revenue": "Ingresos",
+      "localArtists": "Artistas Locales"
+    }
+  }
+}

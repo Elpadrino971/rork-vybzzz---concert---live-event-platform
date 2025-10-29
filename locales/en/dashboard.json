@@ -1,0 +1,120 @@
+{
+  "artist": {
+    "title": "Artist Dashboard",
+    "welcome": "Welcome, {{name}}",
+    "createEvent": "Create Event",
+    "stats": {
+      "totalEvents": "Total Events",
+      "ticketsSold": "Tickets Sold",
+      "totalRevenue": "Total Revenue",
+      "stripeStatus": "Stripe Status"
+    },
+    "stripeConnect": {
+      "complete": "Connected",
+      "incomplete": "Setup Required",
+      "setup": "Setup Stripe Connect"
+    },
+    "events": {
+      "title": "My Events",
+      "noEvents": "No events created",
+      "status": {
+        "live": "LIVE",
+        "scheduled": "SCHEDULED",
+        "draft": "DRAFT",
+        "ended": "ENDED",
+        "cancelled": "CANCELLED"
+      },
+      "attendees": "{{count}} attendee(s)",
+      "price": "Ticket Price"
+    },
+    "analytics": {
+      "title": "Analytics",
+      "revenue": "Revenue",
+      "artistShare": "Artist Share",
+      "platformShare": "Platform Share",
+      "tips": "Tips",
+      "payouts": "Payouts",
+      "nextPayout": "Next Payout",
+      "lastPayout": "Last Payout"
+    }
+  },
+  "affiliate": {
+    "title": "Business Introducer Dashboard",
+    "subtitle": "3-Level Affiliate Program",
+    "description": "Earn commissions on ticket sales by referring users",
+    "referralCode": {
+      "title": "Your Referral Code",
+      "code": "Code",
+      "copied": "Code copied!",
+      "share": "Share this code with your contacts to earn commissions",
+      "motivation": "Every ticket purchased with your code generates commissions!"
+    },
+    "stats": {
+      "level": "Level",
+      "totalReferrals": "Total Referrals",
+      "pendingEarnings": "Pending Earnings",
+      "paidEarnings": "Paid Earnings"
+    },
+    "commissionRates": {
+      "title": "Commission Rates",
+      "level1": "Level 1 (Direct)",
+      "level2": "Level 2 (Sub-referrals)",
+      "level3": "Level 3 (Sub-sub-referrals)",
+      "rate": "{{rate}}% per ticket"
+    },
+    "recentReferrals": {
+      "title": "Recent Referrals",
+      "user": "User",
+      "event": "Event",
+      "amount": "Amount",
+      "date": "Date",
+      "noReferrals": "No referrals yet"
+    }
+  },
+  "fan": {
+    "title": "My Space",
+    "welcome": "Welcome, {{name}}",
+    "stats": {
+      "upcomingEvents": "Upcoming Events",
+      "pastEvents": "Past Events",
+      "followedArtists": "Followed Artists",
+      "totalSpent": "Total Spent"
+    },
+    "upcomingTickets": {
+      "title": "My Upcoming Tickets",
+      "noTickets": "No upcoming tickets",
+      "viewTicket": "View Ticket",
+      "eventDate": "Event Date"
+    },
+    "pastTickets": {
+      "title": "Past Events",
+      "noPastTickets": "No past events",
+      "attended": "Attended on {{date}}"
+    },
+    "followedArtists": {
+      "title": "Artists I Follow",
+      "noArtists": "You're not following any artists",
+      "followers": "{{count}} follower(s)",
+      "unfollow": "Unfollow"
+    },
+    "spending": {
+      "title": "My Spending",
+      "tickets": "Tickets",
+      "tips": "Tips",
+      "total": "Total"
+    },
+    "recentActivity": {
+      "title": "Recent Activity",
+      "noActivity": "No recent activity"
+    }
+  },
+  "regional": {
+    "title": "Regional Manager Dashboard",
+    "stats": {
+      "ticketSales": "Ticket Sales",
+      "attendanceRate": "Attendance Rate",
+      "revenue": "Revenue",
+      "localArtists": "Local Artists"
+    }
+  }
+}

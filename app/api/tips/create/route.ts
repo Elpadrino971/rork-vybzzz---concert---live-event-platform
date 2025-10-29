@@ -96,7 +96,10 @@ export async function POST(request: NextRequest) {
       return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    if (!artistProfile.profile?.stripe_account_id) {
+    // Extract profile (Supabase returns it as array, but we know there's only one)
+    const profile = Array.isArray(artistProfile.profile) ? artistProfile.profile[0] : artistProfile.profile as any
+
+    if (!profile?.stripe_account_id) {
       const response = NextResponse.json(
         { error: 'Artist has not completed Stripe onboarding' },
         { status: 400 }
@@ -111,7 +114,7 @@ export async function POST(request: NextRequest) {
     const paymentIntent = await createTipPaymentIntent(
       Math.round(amount * 100), // Convert to cents
       userProfile.stripe_customer_id,
-      artistProfile.profile.stripe_account_id,
+      profile.stripe_account_id,
       tempTipId,
       eventId
     )

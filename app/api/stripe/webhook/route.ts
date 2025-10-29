@@ -114,20 +114,28 @@ export async function POST(request: NextRequest) {
             // Don't return - continue processing to increment attendees
           }
 
-          // Increment event attendees
-          const { error: attendeeError } = await supabase
+          // Increment event attendees - fetch current value and increment
+          const { data: eventData, error: eventFetchError } = await supabase
             .from('events')
-            .update({
-              current_attendees: supabase.raw('current_attendees + 1'),
-            })
+            .select('current_attendees')
             .eq('id', event_id)
+            .single()
 
-          if (attendeeError) {
-            logger.error('Failed to increment event attendees', undefined, {
-              eventId: event_id,
-              ticketId: ticket_id,
-              errorMessage: attendeeError.message
-            })
+          if (!eventFetchError && eventData) {
+            const { error: attendeeError } = await supabase
+              .from('events')
+              .update({
+                current_attendees: (eventData.current_attendees || 0) + 1,
+              })
+              .eq('id', event_id)
+
+            if (attendeeError) {
+              logger.error('Failed to increment event attendees', undefined, {
+                eventId: event_id,
+                ticketId: ticket_id,
+                errorMessage: attendeeError.message
+              })
+            }
           }
 
           // TODO: Create commissions for AA/RR if present

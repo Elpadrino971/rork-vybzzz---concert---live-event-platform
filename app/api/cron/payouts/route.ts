@@ -96,6 +96,9 @@ export async function GET(request: NextRequest) {
 
     for (const event of events) {
       try {
+        // Extract artist (Supabase returns it as array, but we know there's only one)
+        const artist = Array.isArray(event.artist) ? event.artist[0] : event.artist as any
+
         // Check if payout already exists for this event
         const { data: existingPayout } = await supabase
           .from('payouts')
@@ -142,7 +145,7 @@ export async function GET(request: NextRequest) {
           elite: 0.7,    // Artist keeps 70%
         }
 
-        const artistShare = tierRevenueSplit[event.artist.subscription_tier as keyof typeof tierRevenueSplit] || 0.5
+        const artistShare = tierRevenueSplit[artist.subscription_tier as keyof typeof tierRevenueSplit] || 0.5
         const artistRevenue = totalRevenue * artistShare
 
         // Get all commissions for this event's tickets
@@ -174,7 +177,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Check if artist has Stripe Connect account
-        if (!event.artist.stripe_account_id) {
+        if (!artist.stripe_account_id) {
           logger.warn('Artist has no Stripe Connect account, skipping payout', {
             eventId: event.id,
             artistId: event.artist_id,
@@ -215,7 +218,7 @@ export async function GET(request: NextRequest) {
               },
             },
             {
-              stripeAccount: event.artist.stripe_account_id,
+              stripeAccount: artist.stripe_account_id,
             }
           )
 

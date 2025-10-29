@@ -569,7 +569,7 @@ export const artistsAPI = {
       .eq('fan_id', user.id)
 
     if (error) throw error
-    return data.map(f => f.artist) as Artist[]
+    return (data?.map((f: any) => f.artist) || []) as unknown as Artist[]
   },
 }
 

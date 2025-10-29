@@ -54,7 +54,7 @@ export default function EventCard({ event }: EventCardProps) {
           {/* Artist */}
           {event.artist && (
             <p className="text-purple-600 font-semibold mb-3">
-              {event.artist.stage_name || event.artist.profile?.full_name}
+              {event.artist.stage_name || event.artist.full_name}
             </p>
           )}
 

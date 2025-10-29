@@ -22,10 +22,7 @@ interface Message {
   timestamp: Date;
 }
 
-// CRITICAL SECURITY WARNING: API key should NEVER be in client-side code
-// This key is exposed to all users and should be rotated immediately
-// TODO: Move to environment variable (process.env.OPENAI_API_KEY) or use backend API
-const OPENAI_API_KEY = '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';
+// API calls are now handled through secure backend route at /api/chat
 
 export default function ChatScreen() {
   const { colors } = useTheme();
@@ -74,50 +71,28 @@ export default function ChatScreen() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a helpful AI assistant for Vybzzz, a concert and live event platform. You help users with:
-              - Finding and discovering live music events and concerts
-              - Buying tickets and VIP passes
-              - Uploading and sharing concert videos
-              - Becoming verified artists on the platform
-              - Using premium features and subscriptions
-              - Navigating the app and its features
-              - General questions about live music and events
-              
-              Keep responses helpful, friendly, and concise. Focus on Vybzzz-related topics.`,
-            },
-            {
-              role: 'user',
-              content: text.trim(),
-            },
-          ],
-          max_tokens: 300,
-          temperature: 0.7,
+          message: text.trim(),
         }),
       });
 
       const data = await response.json();
-      
-      if (data.choices && data.choices[0]) {
+
+      if (response.ok && data.response) {
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
-          text: data.choices[0].message.content.trim(),
+          text: data.response,
           isUser: false,
           timestamp: new Date(),
         };
         setMessages(prev => [...prev, aiMessage]);
       } else {
-        throw new Error('Invalid response from AI');
+        throw new Error(data.error || 'Invalid response from AI');
       }
     } catch (error) {
       console.error('Error sending message:', error);

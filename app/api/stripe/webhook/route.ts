@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe-mobile'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 import Stripe from 'stripe'
 
 /**
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest) {
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err: any) {
-    console.error('Webhook signature verification failed:', err.message)
+    logger.error('Webhook signature verification failed', { error: err.message })
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const metadata = paymentIntent.metadata
 
-        console.log('Payment succeeded:', paymentIntent.id, metadata)
+        logger.info('Payment succeeded', { paymentIntentId: paymentIntent.id, metadata })
 
         // TICKET PURCHASE
         if (metadata.type === 'ticket_purchase') {
@@ -64,16 +65,29 @@ export async function POST(request: NextRequest) {
             .eq('id', ticket_id)
 
           if (ticketError) {
-            console.error('Error updating ticket:', ticketError)
+            logger.error('Failed to update ticket status', {
+              ticketId: ticket_id,
+              paymentIntentId: paymentIntent.id,
+              error: ticketError
+            })
+            // Don't return - continue processing to increment attendees
           }
 
           // Increment event attendees
-          await supabase
+          const { error: attendeeError } = await supabase
             .from('events')
             .update({
               current_attendees: supabase.raw('current_attendees + 1'),
             })
             .eq('id', event_id)
+
+          if (attendeeError) {
+            logger.error('Failed to increment event attendees', {
+              eventId: event_id,
+              ticketId: ticket_id,
+              error: attendeeError
+            })
+          }
 
           // TODO: Create commissions for AA/RR if present
           if (aa_id || rr_id) {
@@ -90,7 +104,7 @@ export async function POST(request: NextRequest) {
               // AA Commission (if exists)
               if (aa_id) {
                 // Level 1: 2.5%
-                await supabase.from('commissions').insert({
+                const { error: commissionError } = await supabase.from('commissions').insert({
                   ticket_id,
                   recipient_id: aa_id,
                   recipient_type: 'aa',
@@ -100,19 +114,32 @@ export async function POST(request: NextRequest) {
                   status: 'pending',
                 })
 
+                if (commissionError) {
+                  logger.error('Failed to create AA commission', {
+                    ticketId: ticket_id,
+                    aaId: aa_id,
+                    error: commissionError
+                  })
+                }
+
                 // TODO: Get parent and grandparent AA for levels 2 & 3
               }
 
               // RR Commission (if exists)
               if (rr_id) {
-                const { data: rr } = await supabase
+                const { data: rr, error: rrError } = await supabase
                   .from('responsables_regionaux')
                   .select('commission_rate')
                   .eq('id', rr_id)
                   .single()
 
-                if (rr) {
-                  await supabase.from('commissions').insert({
+                if (rrError) {
+                  logger.error('Failed to fetch RR commission rate', {
+                    rrId: rr_id,
+                    error: rrError
+                  })
+                } else if (rr) {
+                  const { error: rrCommissionError } = await supabase.from('commissions').insert({
                     ticket_id,
                     recipient_id: rr_id,
                     recipient_type: 'rr',
@@ -121,6 +148,14 @@ export async function POST(request: NextRequest) {
                     commission_amount: ticketPrice * parseFloat(rr.commission_rate.toString()),
                     status: 'pending',
                   })
+
+                  if (rrCommissionError) {
+                    logger.error('Failed to create RR commission', {
+                      ticketId: ticket_id,
+                      rrId: rr_id,
+                      error: rrCommissionError
+                    })
+                  }
                 }
               }
             }
@@ -141,7 +176,11 @@ export async function POST(request: NextRequest) {
             .eq('id', tip_id)
 
           if (tipError) {
-            console.error('Error updating tip:', tipError)
+            logger.error('Failed to update tip status', {
+              tipId: tip_id,
+              paymentIntentId: paymentIntent.id,
+              error: tipError
+            })
           }
         }
 
@@ -152,20 +191,36 @@ export async function POST(request: NextRequest) {
         const paymentIntent = event.data.object as Stripe.PaymentIntent
         const metadata = paymentIntent.metadata
 
-        console.log('Payment failed:', paymentIntent.id, metadata)
+        logger.warn('Payment failed', { paymentIntentId: paymentIntent.id, metadata })
 
         if (metadata.type === 'ticket_purchase') {
-          await supabase
+          const { error: ticketError } = await supabase
             .from('tickets')
             .update({ payment_status: 'failed' })
             .eq('id', metadata.ticket_id)
+
+          if (ticketError) {
+            logger.error('Failed to mark ticket as failed', {
+              ticketId: metadata.ticket_id,
+              paymentIntentId: paymentIntent.id,
+              error: ticketError
+            })
+          }
         }
 
         if (metadata.type === 'tip') {
-          await supabase
+          const { error: tipError } = await supabase
             .from('tips')
             .update({ payment_status: 'failed' })
             .eq('id', metadata.tip_id)
+
+          if (tipError) {
+            logger.error('Failed to mark tip as failed', {
+              tipId: metadata.tip_id,
+              paymentIntentId: paymentIntent.id,
+              error: tipError
+            })
+          }
         }
 
         break
@@ -194,7 +249,7 @@ export async function POST(request: NextRequest) {
             tier = subscription.metadata.tier as any
           }
 
-          await supabase
+          const { error: artistError } = await supabase
             .from('artists')
             .update({
               subscription_tier: tier,
@@ -205,6 +260,15 @@ export async function POST(request: NextRequest) {
                   : undefined,
             })
             .eq('id', artistId)
+
+          if (artistError) {
+            logger.error('Failed to update artist subscription', {
+              artistId,
+              subscriptionId: subscription.id,
+              tier,
+              error: artistError
+            })
+          }
         }
 
         break
@@ -216,13 +280,21 @@ export async function POST(request: NextRequest) {
 
         if (artistId) {
           // Downgrade to starter (or disable?)
-          await supabase
+          const { error: artistError } = await supabase
             .from('artists')
             .update({
               subscription_tier: 'starter',
               subscription_ends_at: null,
             })
             .eq('id', artistId)
+
+          if (artistError) {
+            logger.error('Failed to downgrade artist subscription', {
+              artistId,
+              subscriptionId: subscription.id,
+              error: artistError
+            })
+          }
         }
 
         break
@@ -237,24 +309,31 @@ export async function POST(request: NextRequest) {
 
         // Check if account is fully onboarded
         if (account.details_submitted && account.charges_enabled) {
-          await supabase
+          const { error: accountError } = await supabase
             .from('artists')
             .update({
               stripe_account_completed: true,
             })
             .eq('stripe_account_id', account.id)
+
+          if (accountError) {
+            logger.error('Failed to update artist Stripe account status', {
+              stripeAccountId: account.id,
+              error: accountError
+            })
+          }
         }
 
         break
       }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        logger.warn('Unhandled webhook event type', { eventType: event.type })
     }
 
     return NextResponse.json({ received: true })
   } catch (error: any) {
-    console.error('Error processing webhook:', error)
+    logger.error('Error processing webhook', { error: error.message, stack: error.stack })
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

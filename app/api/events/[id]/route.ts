@@ -10,6 +10,8 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
+
   try {
     const tracker = createPerformanceTracker('get_event_detail')
 
@@ -21,8 +23,6 @@ export async function GET(
         headers: { 'Content-Type': 'application/json' },
       })
     }
-
-    const { id } = await params
 
     // UUID validation
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -87,6 +87,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
+
   try {
     // Rate limiting
     const rateLimitResult = await rateLimit(request, 'api')
@@ -96,8 +98,6 @@ export async function PUT(
         headers: { 'Content-Type': 'application/json' },
       })
     }
-
-    const { id } = await params
 
     // UUID validation
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -224,6 +224,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
+
   try {
     // Rate limiting
     const rateLimitResult = await rateLimit(request, 'api')
@@ -233,8 +235,6 @@ export async function DELETE(
         headers: { 'Content-Type': 'application/json' },
       })
     }
-
-    const { id } = await params
 
     // UUID validation
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i

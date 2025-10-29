@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "home": "首页",
+    "discover": "发现",
+    "events": "活动",
+    "artists": "艺术家",
+    "tickets": "门票",
+    "profile": "个人资料",
+    "settings": "设置",
+    "dashboard": "仪表板"
+  },
+  "actions": {
+    "back": "返回",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "view": "查看",
+    "create": "创建",
+    "search": "搜索",
+    "filter": "筛选",
+    "export": "导出",
+    "copy": "复制",
+    "share": "分享",
+    "close": "关闭",
+    "submit": "提交",
+    "confirm": "确认"
+  },
+  "states": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "noData": "无数据",
+    "empty": "空"
+  },
+  "time": {
+    "today": "今天",
+    "yesterday": "昨天",
+    "tomorrow": "明天",
+    "thisWeek": "本周",
+    "thisMonth": "本月",
+    "thisYear": "今年"
+  },
+  "currency": {
+    "symbol": "€",
+    "format": "€{{amount}}"
+  }
+}

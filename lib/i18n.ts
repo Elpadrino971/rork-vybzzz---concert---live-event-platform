@@ -6,19 +6,28 @@
 import frCommon from '@/locales/fr/common.json'
 import enCommon from '@/locales/en/common.json'
 import esCommon from '@/locales/es/common.json'
+import deCommon from '@/locales/de/common.json'
+import ptCommon from '@/locales/pt/common.json'
+import zhCommon from '@/locales/zh/common.json'
 
 import frDashboard from '@/locales/fr/dashboard.json'
 import enDashboard from '@/locales/en/dashboard.json'
 import esDashboard from '@/locales/es/dashboard.json'
+import deDashboard from '@/locales/de/dashboard.json'
+import ptDashboard from '@/locales/pt/dashboard.json'
+import zhDashboard from '@/locales/zh/dashboard.json'
 
-export type Locale = 'fr' | 'en' | 'es'
+export type Locale = 'fr' | 'en' | 'es' | 'de' | 'pt' | 'zh'
 
-export const locales: Locale[] = ['fr', 'en', 'es']
+export const locales: Locale[] = ['fr', 'en', 'es', 'de', 'pt', 'zh']
 
 export const localeNames: Record<Locale, string> = {
   fr: 'Français',
   en: 'English',
   es: 'Español',
+  de: 'Deutsch',
+  pt: 'Português',
+  zh: '中文',
 }
 
 // Translation resources
@@ -34,6 +43,18 @@ const translations = {
   es: {
     common: esCommon,
     dashboard: esDashboard,
+  },
+  de: {
+    common: deCommon,
+    dashboard: deDashboard,
+  },
+  pt: {
+    common: ptCommon,
+    dashboard: ptDashboard,
+  },
+  zh: {
+    common: zhCommon,
+    dashboard: zhDashboard,
   },
 }
 

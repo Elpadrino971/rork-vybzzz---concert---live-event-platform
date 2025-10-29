@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { fr, enUS, es } from 'date-fns/locale'
+import { fr, enUS, es, de, pt, zhCN } from 'date-fns/locale'
 import { useI18n } from '@/contexts/I18nContext'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 
@@ -36,7 +36,7 @@ export default function ArtistDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const dateLocales = { fr, en: enUS, es }
+  const dateLocales = { fr, en: enUS, es, de, pt, zh: zhCN }
 
   useEffect(() => {
     fetchDashboardData()

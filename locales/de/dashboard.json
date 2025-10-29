@@ -1,0 +1,120 @@
+{
+  "artist": {
+    "title": "Künstler-Dashboard",
+    "welcome": "Willkommen, {{name}}",
+    "createEvent": "Veranstaltung erstellen",
+    "stats": {
+      "totalEvents": "Veranstaltungen gesamt",
+      "ticketsSold": "Verkaufte Tickets",
+      "totalRevenue": "Gesamteinnahmen",
+      "stripeStatus": "Stripe-Status"
+    },
+    "stripeConnect": {
+      "complete": "Verbunden",
+      "incomplete": "Konfiguration erforderlich",
+      "setup": "Stripe Connect einrichten"
+    },
+    "events": {
+      "title": "Meine Veranstaltungen",
+      "noEvents": "Keine Veranstaltungen erstellt",
+      "status": {
+        "live": "LIVE",
+        "scheduled": "GEPLANT",
+        "draft": "ENTWURF",
+        "ended": "BEENDET",
+        "cancelled": "ABGESAGT"
+      },
+      "attendees": "{{count}} Teilnehmer",
+      "price": "Ticketpreis"
+    },
+    "analytics": {
+      "title": "Statistiken",
+      "revenue": "Einnahmen",
+      "artistShare": "Künstleranteil",
+      "platformShare": "Plattformanteil",
+      "tips": "Trinkgelder",
+      "payouts": "Auszahlungen",
+      "nextPayout": "Nächste Auszahlung",
+      "lastPayout": "Letzte Auszahlung"
+    }
+  },
+  "affiliate": {
+    "title": "Partner-Dashboard",
+    "subtitle": "3-stufiges Partnerprogramm",
+    "description": "Verdienen Sie Provisionen durch die Vermittlung von Nutzern",
+    "referralCode": {
+      "title": "Ihr Empfehlungscode",
+      "code": "Code",
+      "copied": "Code kopiert!",
+      "share": "Teilen Sie diesen Code mit Ihren Kontakten, um Provisionen zu verdienen",
+      "motivation": "Jedes mit Ihrem Code gekaufte Ticket generiert Provisionen!"
+    },
+    "stats": {
+      "level": "Stufe",
+      "totalReferrals": "Empfehlungen gesamt",
+      "pendingEarnings": "Ausstehende Einnahmen",
+      "paidEarnings": "Ausgezahlte Einnahmen"
+    },
+    "commissionRates": {
+      "title": "Provisionssätze",
+      "level1": "Stufe 1 (Direkt)",
+      "level2": "Stufe 2 (Unterempfehlungen)",
+      "level3": "Stufe 3 (Unter-Unterempfehlungen)",
+      "rate": "{{rate}}% pro Ticket"
+    },
+    "recentReferrals": {
+      "title": "Aktuelle Empfehlungen",
+      "user": "Benutzer",
+      "event": "Veranstaltung",
+      "amount": "Betrag",
+      "date": "Datum",
+      "noReferrals": "Noch keine Empfehlungen"
+    }
+  },
+  "fan": {
+    "title": "Mein Bereich",
+    "welcome": "Willkommen, {{name}}",
+    "stats": {
+      "upcomingEvents": "Bevorstehende Veranstaltungen",
+      "pastEvents": "Vergangene Veranstaltungen",
+      "followedArtists": "Gefolgte Künstler",
+      "totalSpent": "Ausgaben gesamt"
+    },
+    "upcomingTickets": {
+      "title": "Meine bevorstehenden Tickets",
+      "noTickets": "Keine bevorstehenden Tickets",
+      "viewTicket": "Ticket ansehen",
+      "eventDate": "Veranstaltungsdatum"
+    },
+    "pastTickets": {
+      "title": "Vergangene Veranstaltungen",
+      "noPastTickets": "Keine vergangenen Veranstaltungen",
+      "attended": "Teilgenommen am {{date}}"
+    },
+    "followedArtists": {
+      "title": "Künstler, denen ich folge",
+      "noArtists": "Sie folgen keinen Künstlern",
+      "followers": "{{count}} Follower",
+      "unfollow": "Nicht mehr folgen"
+    },
+    "spending": {
+      "title": "Meine Ausgaben",
+      "tickets": "Tickets",
+      "tips": "Trinkgelder",
+      "total": "Gesamt"
+    },
+    "recentActivity": {
+      "title": "Letzte Aktivität",
+      "noActivity": "Keine aktuelle Aktivität"
+    }
+  },
+  "regional": {
+    "title": "Regionalmanager-Dashboard",
+    "stats": {
+      "ticketSales": "Ticketverkäufe",
+      "attendanceRate": "Teilnahmequote",
+      "revenue": "Einnahmen",
+      "localArtists": "Lokale Künstler"
+    }
+  }
+}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useI18n } from '@/contexts/I18nContext'
 import { format } from 'date-fns'
-import { fr, enUS, es } from 'date-fns/locale'
+import { fr, enUS, es, de, pt, zhCN } from 'date-fns/locale'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 interface FanDashboardData {
@@ -58,7 +58,7 @@ export default function FanDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const dateLocales = { fr, en: enUS, es }
+  const dateLocales = { fr, en: enUS, es, de, pt, zh: zhCN }
 
   useEffect(() => {
     fetchDashboardData()

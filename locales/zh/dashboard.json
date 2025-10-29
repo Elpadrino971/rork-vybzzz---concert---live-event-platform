@@ -1,0 +1,120 @@
+{
+  "artist": {
+    "title": "艺术家仪表板",
+    "welcome": "欢迎，{{name}}",
+    "createEvent": "创建活动",
+    "stats": {
+      "totalEvents": "活动总数",
+      "ticketsSold": "已售门票",
+      "totalRevenue": "总收入",
+      "stripeStatus": "Stripe状态"
+    },
+    "stripeConnect": {
+      "complete": "已连接",
+      "incomplete": "需要配置",
+      "setup": "设置Stripe Connect"
+    },
+    "events": {
+      "title": "我的活动",
+      "noEvents": "未创建活动",
+      "status": {
+        "live": "直播中",
+        "scheduled": "已计划",
+        "draft": "草稿",
+        "ended": "已结束",
+        "cancelled": "已取消"
+      },
+      "attendees": "{{count}}位参与者",
+      "price": "门票价格"
+    },
+    "analytics": {
+      "title": "统计",
+      "revenue": "收入",
+      "artistShare": "艺术家份额",
+      "platformShare": "平台份额",
+      "tips": "小费",
+      "payouts": "付款",
+      "nextPayout": "下次付款",
+      "lastPayout": "上次付款"
+    }
+  },
+  "affiliate": {
+    "title": "合作伙伴仪表板",
+    "subtitle": "三级联盟计划",
+    "description": "通过推荐用户赚取门票销售佣金",
+    "referralCode": {
+      "title": "您的推荐代码",
+      "code": "代码",
+      "copied": "代码已复制！",
+      "share": "与您的联系人分享此代码以赚取佣金",
+      "motivation": "每张使用您代码购买的门票都会产生佣金！"
+    },
+    "stats": {
+      "level": "等级",
+      "totalReferrals": "推荐总数",
+      "pendingEarnings": "待付收入",
+      "paidEarnings": "已付收入"
+    },
+    "commissionRates": {
+      "title": "佣金率",
+      "level1": "级别1（直接）",
+      "level2": "级别2（子推荐）",
+      "level3": "级别3（子子推荐）",
+      "rate": "每张门票{{rate}}%"
+    },
+    "recentReferrals": {
+      "title": "最近推荐",
+      "user": "用户",
+      "event": "活动",
+      "amount": "金额",
+      "date": "日期",
+      "noReferrals": "暂无推荐"
+    }
+  },
+  "fan": {
+    "title": "我的空间",
+    "welcome": "欢迎，{{name}}",
+    "stats": {
+      "upcomingEvents": "即将到来的活动",
+      "pastEvents": "过往活动",
+      "followedArtists": "关注的艺术家",
+      "totalSpent": "总花费"
+    },
+    "upcomingTickets": {
+      "title": "我的即将到来的门票",
+      "noTickets": "没有即将到来的门票",
+      "viewTicket": "查看门票",
+      "eventDate": "活动日期"
+    },
+    "pastTickets": {
+      "title": "过往活动",
+      "noPastTickets": "没有过往活动",
+      "attended": "参加于{{date}}"
+    },
+    "followedArtists": {
+      "title": "我关注的艺术家",
+      "noArtists": "您没有关注任何艺术家",
+      "followers": "{{count}}位关注者",
+      "unfollow": "取消关注"
+    },
+    "spending": {
+      "title": "我的消费",
+      "tickets": "门票",
+      "tips": "小费",
+      "total": "总计"
+    },
+    "recentActivity": {
+      "title": "最近活动",
+      "noActivity": "无最近活动"
+    }
+  },
+  "regional": {
+    "title": "区域经理仪表板",
+    "stats": {
+      "ticketSales": "门票销售",
+      "attendanceRate": "出席率",
+      "revenue": "收入",
+      "localArtists": "本地艺术家"
+    }
+  }
+}

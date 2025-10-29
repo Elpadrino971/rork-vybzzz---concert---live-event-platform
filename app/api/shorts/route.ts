@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
     const offset = Math.max(parseInt(searchParams.get('offset') || '0'), 0)
 
     // Input validation - Filters
-    const artistId = searchParams.get('artist_id')
-    const eventId = searchParams.get('event_id')
+    const artistId = searchParams.get('artist_id') || undefined
+    const eventId = searchParams.get('event_id') || undefined
     const sortBy = searchParams.get('sort') || 'recent'
 
     // UUID validation

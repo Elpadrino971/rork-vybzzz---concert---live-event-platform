@@ -3,9 +3,37 @@ import { createClient } from '@/lib/supabase/server'
 import { createTicketPaymentIntent } from '@/lib/stripe'
 import { getTicketPrice } from '@/lib/happy-hour'
 import { calculateAffiliateCommissions } from '@/lib/affiliates'
+import { PurchaseTicketSchema, validateRequest, formatZodErrors } from '@/lib/validations'
+import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
 
+/**
+ * POST /api/tickets/purchase - Purchase a ticket for an event
+ * Rate limit: 20 requests per minute (auth endpoint)
+ */
 export async function POST(request: NextRequest) {
   try {
+    // ✅ AMÉLIORATION: Rate limiting
+    const rateLimitResult = await rateLimit(request, 'auth')
+
+    if (!rateLimitResult.success) {
+      const response = new Response(
+        JSON.stringify({
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil(
+              (rateLimitResult.reset - Date.now()) / 1000
+            ).toString(),
+          },
+        }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
+
     const supabase = await createClient()
 
     // Get current user
@@ -15,14 +43,30 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    const { eventId, affiliateReferralCode } = await request.json()
+    const body = await request.json()
 
-    if (!eventId) {
-      return NextResponse.json({ error: 'Event ID is required' }, { status: 400 })
+    // ✅ AMÉLIORATION: Validation Zod
+    const validationResult = validateRequest(PurchaseTicketSchema, {
+      event_id: body.eventId || body.event_id,
+      referral_code: body.affiliateReferralCode || body.referral_code,
+    })
+
+    if (!validationResult.success) {
+      const response = NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: formatZodErrors(validationResult.errors),
+        },
+        { status: 400 }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
+
+    const { event_id: eventId, referral_code: affiliateReferralCode } = validationResult.data
 
     // Get event details
     const { data: event, error: eventError } = await supabase
@@ -32,17 +76,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (eventError || !event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      const response = NextResponse.json({ error: 'Event not found' }, { status: 404 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Check if event is available
     if (event.status !== 'scheduled' && event.status !== 'live') {
-      return NextResponse.json({ error: 'Event is not available for ticket purchase' }, { status: 400 })
+      const response = NextResponse.json({ error: 'Event is not available for ticket purchase' }, { status: 400 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Check if max attendees reached
     if (event.max_attendees && event.current_attendees >= event.max_attendees) {
-      return NextResponse.json({ error: 'Event is sold out' }, { status: 400 })
+      const response = NextResponse.json({ error: 'Event is sold out' }, { status: 400 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Check if user already has a ticket
@@ -54,7 +101,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingTicket) {
-      return NextResponse.json({ error: 'You already have a ticket for this event' }, { status: 400 })
+      const response = NextResponse.json({ error: 'You already have a ticket for this event' }, { status: 400 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Calculate ticket price (Happy Hour check)
@@ -71,7 +119,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!userProfile) {
-      return NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+      const response = NextResponse.json({ error: 'User profile not found' }, { status: 404 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Get artist's Stripe account
@@ -82,10 +131,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!artistProfile?.stripe_account_id) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Artist has not completed Stripe onboarding' },
         { status: 400 }
       )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Handle affiliate referral
@@ -143,7 +193,8 @@ export async function POST(request: NextRequest) {
     )
 
     if (!paymentIntent.success) {
-      return NextResponse.json({ error: paymentIntent.error }, { status: 500 })
+      const response = NextResponse.json({ error: paymentIntent.error }, { status: 500 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Create ticket record
@@ -163,7 +214,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (ticketError) {
-      return NextResponse.json({ error: ticketError.message }, { status: 500 })
+      const response = NextResponse.json({ error: ticketError.message }, { status: 500 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Create affiliate commissions if applicable
@@ -212,13 +264,15 @@ export async function POST(request: NextRequest) {
       await supabase.from('affiliate_commissions').insert(commissionsToInsert)
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       clientSecret: paymentIntent.clientSecret,
       ticketId: ticket.id,
       price: ticketPrice,
       isHappyHour,
     })
+
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
     console.error('Error purchasing ticket:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

@@ -1,9 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createTipPaymentIntent } from '@/lib/stripe'
+import { CreateTipSchema, validateRequest, formatZodErrors } from '@/lib/validations'
+import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
 
+/**
+ * POST /api/tips/create - Create a tip for an artist
+ * Rate limit: 20 requests per minute (auth endpoint)
+ */
 export async function POST(request: NextRequest) {
   try {
+    // ✅ AMÉLIORATION: Rate limiting
+    const rateLimitResult = await rateLimit(request, 'auth')
+
+    if (!rateLimitResult.success) {
+      const response = new Response(
+        JSON.stringify({
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil(
+              (rateLimitResult.reset - Date.now()) / 1000
+            ).toString(),
+          },
+        }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
+
     const supabase = await createClient()
 
     // Get current user
@@ -13,25 +41,32 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    const { artistId, amount, message, eventId } = await request.json()
+    const body = await request.json()
 
-    // Validate input
-    if (!artistId || !amount) {
-      return NextResponse.json(
-        { error: 'Artist ID and amount are required' },
+    // ✅ AMÉLIORATION: Validation Zod
+    const validationResult = validateRequest(CreateTipSchema, {
+      artist_id: body.artistId || body.artist_id,
+      amount: body.amount,
+      message: body.message,
+    })
+
+    if (!validationResult.success) {
+      const response = NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: formatZodErrors(validationResult.errors),
+        },
         { status: 400 }
       )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    if (amount < 1) {
-      return NextResponse.json(
-        { error: 'Minimum tip amount is €1' },
-        { status: 400 }
-      )
-    }
+    const { artist_id: artistId, amount, message } = validationResult.data
+    const eventId = body.eventId || body.event_id
 
     // Get user's profile with Stripe customer ID
     const { data: userProfile } = await supabase
@@ -41,10 +76,11 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!userProfile?.stripe_customer_id) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'User has no Stripe account' },
         { status: 400 }
       )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Get artist's profile and verify they exist
@@ -55,14 +91,16 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!artistProfile) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 })
+      const response = NextResponse.json({ error: 'Artist not found' }, { status: 404 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     if (!artistProfile.profile?.stripe_account_id) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Artist has not completed Stripe onboarding' },
         { status: 400 }
       )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Create temporary tip ID
@@ -78,7 +116,8 @@ export async function POST(request: NextRequest) {
     )
 
     if (!paymentIntent.success) {
-      return NextResponse.json({ error: paymentIntent.error }, { status: 500 })
+      const response = NextResponse.json({ error: paymentIntent.error }, { status: 500 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Create tip record
@@ -98,7 +137,8 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (tipError) {
-      return NextResponse.json({ error: tipError.message }, { status: 500 })
+      const response = NextResponse.json({ error: tipError.message }, { status: 500 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Create transaction record
@@ -116,11 +156,13 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       clientSecret: paymentIntent.clientSecret,
       tipId: tip.id,
     })
+
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
     console.error('Error creating tip:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

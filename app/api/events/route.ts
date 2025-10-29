@@ -1,13 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { CreateEventSchema, validateRequest, formatZodErrors } from '@/lib/validations'
+import { rateLimit, addRateLimitHeaders } from '@/lib/rate-limit'
 
 /**
  * Events API
  * GET /api/events - Get all events with filters
  * Supports: status, artist_id, upcoming, limit, offset
+ * Rate limit: 60 requests per minute (public)
  */
 export async function GET(request: NextRequest) {
   try {
+    // ✅ AMÉLIORATION: Rate limiting
+    const rateLimitResult = await rateLimit(request, 'public')
+
+    if (!rateLimitResult.success) {
+      const response = new Response(
+        JSON.stringify({
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil(
+              (rateLimitResult.reset - Date.now()) / 1000
+            ).toString(),
+          },
+        }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
+
     const supabase = await createClient()
     const searchParams = request.nextUrl.searchParams
 
@@ -48,15 +73,18 @@ export async function GET(request: NextRequest) {
     const { data, error, count } = await query
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      const response = NextResponse.json({ error: error.message }, { status: 500 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       events: data,
       total: count,
       limit,
       offset,
     })
+
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
     console.error('Error fetching events:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -70,9 +98,32 @@ export async function GET(request: NextRequest) {
  * - Stripe Connect completion
  * - Ticket price within tier limits (Starter: 5-12€, Pro: 8-18€, Elite: 12-25€)
  * - Happy Hour rules (Wednesday 20h, 4.99€)
+ * Rate limit: 100 requests per minute (authenticated API)
  */
 export async function POST(request: NextRequest) {
   try {
+    // ✅ AMÉLIORATION: Rate limiting
+    const rateLimitResult = await rateLimit(request, 'api')
+
+    if (!rateLimitResult.success) {
+      const response = new Response(
+        JSON.stringify({
+          error: 'Too many requests',
+          retryAfter: Math.ceil((rateLimitResult.reset - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': Math.ceil(
+              (rateLimitResult.reset - Date.now()) / 1000
+            ).toString(),
+          },
+        }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
+
     const supabase = await createClient()
 
     // Get current user
@@ -82,7 +133,8 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      const response = NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Check if user is an artist with full details
@@ -93,18 +145,20 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (!artist) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Artist account required' },
         { status: 403 }
       )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Check if Stripe Connect is completed
     if (!artist.stripe_connect_completed) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Please complete Stripe Connect setup first' },
         { status: 403 }
       )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     // Check if subscription is active (or in trial)
@@ -114,13 +168,27 @@ export async function POST(request: NextRequest) {
       : null
 
     if (subscriptionEnds && subscriptionEnds < now) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Subscription expired. Please renew to create events.' },
         { status: 403 }
       )
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
     const body = await request.json()
+
+    // ✅ AMÉLIORATION: Validation Zod
+    const validationResult = validateRequest(CreateEventSchema, body)
+    if (!validationResult.success) {
+      const response = NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: formatZodErrors(validationResult.errors),
+        },
+        { status: 400 }
+      )
+      return addRateLimitHeaders(response, rateLimitResult)
+    }
 
     const {
       title,
@@ -135,15 +203,7 @@ export async function POST(request: NextRequest) {
       stream_url,
       stream_platform,
       is_happy_hour,
-    } = body
-
-    // Validate required fields
-    if (!title || !scheduled_at || !ticket_price) {
-      return NextResponse.json(
-        { error: 'Title, scheduled time, and ticket price are required' },
-        { status: 400 }
-      )
-    }
+    } = validationResult.data
 
     // Validate ticket price based on subscription tier
     const tierConfig = {
@@ -168,20 +228,22 @@ export async function POST(request: NextRequest) {
         finalPrice = 4.99
         finalIsHappyHour = true
       } else {
-        return NextResponse.json(
+        const response = NextResponse.json(
           { error: 'Happy Hour is only available on Wednesdays at 20:00' },
           { status: 400 }
         )
+        return addRateLimitHeaders(response, rateLimitResult)
       }
     } else {
       // Validate normal ticket price
       if (ticket_price < priceRange.min || ticket_price > priceRange.max) {
-        return NextResponse.json(
+        const response = NextResponse.json(
           {
             error: `Ticket price must be between ${priceRange.min}€ and ${priceRange.max}€ for ${tier} tier`,
           },
           { status: 400 }
         )
+        return addRateLimitHeaders(response, rateLimitResult)
       }
     }
 
@@ -218,13 +280,16 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (eventError) {
-      return NextResponse.json({ error: eventError.message }, { status: 500 })
+      const response = NextResponse.json({ error: eventError.message }, { status: 500 })
+      return addRateLimitHeaders(response, rateLimitResult)
     }
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       { success: true, event, message: 'Event created successfully' },
       { status: 201 }
     )
+
+    return addRateLimitHeaders(response, rateLimitResult)
   } catch (error: any) {
     console.error('Error creating event:', error)
     return NextResponse.json({ error: error.message }, { status: 500 })

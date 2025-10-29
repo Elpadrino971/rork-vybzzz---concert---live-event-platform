@@ -26,6 +26,39 @@ export async function POST(request: NextRequest) {
 
   const supabase = await createClient()
 
+  // ✅ AMÉLIORATION: Idempotency check
+  // Check if this webhook event has already been processed
+  const { data: existingEvent } = await supabase
+    .from('webhook_events')
+    .select('id')
+    .eq('stripe_event_id', event.id)
+    .single()
+
+  if (existingEvent) {
+    console.log(`Webhook event ${event.id} already processed, skipping`)
+    return NextResponse.json({ received: true, skipped: true })
+  }
+
+  // Store the event to prevent duplicate processing
+  const { error: eventInsertError } = await supabase
+    .from('webhook_events')
+    .insert({
+      stripe_event_id: event.id,
+      event_type: event.type,
+      processed_at: new Date().toISOString(),
+      payload: event,
+    })
+
+  if (eventInsertError) {
+    // If insert fails due to unique constraint, event was already processed by another request
+    if (eventInsertError.code === '23505') {
+      console.log(`Webhook event ${event.id} already processed (race condition), skipping`)
+      return NextResponse.json({ received: true, skipped: true })
+    }
+    console.error('Error storing webhook event:', eventInsertError)
+    // Continue processing even if storing fails (better than missing the event)
+  }
+
   try {
     switch (event.type) {
       case 'payment_intent.succeeded': {

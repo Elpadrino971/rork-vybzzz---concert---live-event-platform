@@ -4,6 +4,12 @@ VyBzzZ is a comprehensive mobile-first concert streaming platform connecting art
 
 **Launch Target**: December 31st, 2025 - David Guetta Concert
 
+## Documentation
+
+- 📖 **[README.md](README.md)** - Setup and architecture overview (this file)
+- 🧪 **[TESTING.md](TESTING.md)** - Integration test suite guide
+- 🚀 **[DEPLOYMENT.md](DEPLOYMENT.md)** - Pre-launch checklist and deployment guide
+
 ## Architecture
 
 - **Mobile**: React Native (iOS + Android) with Chromecast/AirPlay casting
@@ -441,6 +447,31 @@ const fanDashboard = await api.dashboard.getFan()
 ```
 
 ## Testing
+
+### Integration Test Suite
+
+The platform includes comprehensive integration tests for critical flows:
+
+```bash
+# Run all tests
+npm test
+
+# Run individual test suites
+npm run test:ticket-purchase   # Ticket purchase flow
+npm run test:tip-payment        # Tip payment flow
+npm run test:webhooks           # Webhook processing
+npm run test:payouts            # Artist payout calculation
+```
+
+**Test Coverage**:
+- ✅ Ticket Purchase Flow (12 tests)
+- ✅ Tip Payment Flow (13 tests)
+- ✅ Webhook Processing (13 tests)
+- ✅ Artist Payout Calculation (12 tests)
+
+**Total**: 50 integration tests validating critical revenue flows
+
+For detailed testing guide, see **[TESTING.md](TESTING.md)**
 
 ### Test Stripe Cards
 - **Success**: `4242 4242 4242 4242`

@@ -36,3 +36,12 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 .vercel
+
+# Next.js
+.next/
+out/
+build/
+*.next
+
+# Sentry
+.sentryclirc

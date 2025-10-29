@@ -1,9 +1,10 @@
 /**
  * Supabase RPC Functions
  *
- * AMÉLIORATION: Atomic Transactions
+ * AMÉLIORATION: Atomic Transactions + Dashboard Optimization
  * Ces fonctions appellent des procédures stockées Supabase (RPC)
  * qui garantissent la cohérence des données avec des transactions atomiques
+ * et optimisent les performances en éliminant les N+1 queries
  */
 
 import { createClient } from '@/lib/supabase/server'
@@ -32,6 +33,91 @@ type ProcessPayoutResult = {
 type CompleteTipResult = {
   tip_id: string
   artist_id: string
+}
+
+type ArtistDashboardData = {
+  artist: {
+    id: string
+    stageName: string
+    bio: string
+    avatarUrl: string
+    bannerUrl: string
+    instagramHandle: string
+    tiktokHandle: string
+    youtubeChannel: string
+    totalFollowers: number
+    totalEvents: number
+  }
+  subscription: {
+    tier: string
+    active: boolean
+    endsAt: string | null
+    daysRemaining: number | null
+    stripeConnectCompleted: boolean
+  }
+  events: {
+    counts: {
+      total: number
+      draft: number
+      scheduled: number
+      live: number
+      ended: number
+      cancelled: number
+    }
+    recent: any[]
+  }
+  tickets: {
+    total: number
+    confirmed: number
+    pending: number
+    failed: number
+  }
+  revenue: {
+    total: number
+    artistShare: number
+    platformShare: number
+    fromTips: number
+    totalEarnings: number
+  }
+  tips: {
+    stats: {
+      total: number
+      totalAmount: number
+    }
+    recent: any[]
+  }
+  payouts: {
+    totalPaid: number
+    nextPayout: any
+    recent: any[]
+  }
+}
+
+type FanDashboardData = {
+  profile: any
+  tickets: {
+    stats: {
+      total: number
+      upcoming: number
+      past: number
+    }
+    upcoming: any[]
+    past: any[]
+  }
+  following: {
+    total: number
+    artists: any[]
+  }
+  tips: {
+    total: number
+    totalAmount: number
+    recent: any[]
+  }
+  spending: {
+    totalTickets: number
+    totalTips: number
+    totalSpent: number
+  }
 }
 
 // ============================================
@@ -259,6 +345,108 @@ export async function completeTipPayment(
     }
   } catch (error: any) {
     console.error('Error calling complete_tip_payment:', error)
+    return {
+      success: false,
+      error: error.message || 'Unknown error',
+    }
+  }
+}
+
+// ============================================
+// ARTIST DASHBOARD (OPTIMIZED)
+// ============================================
+
+/**
+ * Get artist dashboard data (optimized)
+ *
+ * Replaces 6 separate queries with 1 RPC call
+ * Eliminates N+1 query problem
+ *
+ * @param artistId - Artist UUID
+ * @returns Complete dashboard data
+ */
+export async function getArtistDashboard(
+  artistId: string
+): Promise<RPCResult<ArtistDashboardData>> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase.rpc('get_artist_dashboard', {
+      p_artist_id: artistId,
+    })
+
+    if (error) {
+      console.error('RPC get_artist_dashboard error:', error)
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    if (data?.error) {
+      return {
+        success: false,
+        error: data.error,
+      }
+    }
+
+    return {
+      success: true,
+      data: data as ArtistDashboardData,
+    }
+  } catch (error: any) {
+    console.error('Error calling get_artist_dashboard:', error)
+    return {
+      success: false,
+      error: error.message || 'Unknown error',
+    }
+  }
+}
+
+// ============================================
+// FAN DASHBOARD (OPTIMIZED)
+// ============================================
+
+/**
+ * Get fan dashboard data (optimized)
+ *
+ * Replaces 5 separate queries with 1 RPC call
+ * Eliminates N+1 query problem
+ *
+ * @param userId - User UUID
+ * @returns Complete dashboard data
+ */
+export async function getFanDashboard(
+  userId: string
+): Promise<RPCResult<FanDashboardData>> {
+  try {
+    const supabase = await createClient()
+
+    const { data, error } = await supabase.rpc('get_fan_dashboard', {
+      p_user_id: userId,
+    })
+
+    if (error) {
+      console.error('RPC get_fan_dashboard error:', error)
+      return {
+        success: false,
+        error: error.message,
+      }
+    }
+
+    if (data?.error) {
+      return {
+        success: false,
+        error: data.error,
+      }
+    }
+
+    return {
+      success: true,
+      data: data as FanDashboardData,
+    }
+  } catch (error: any) {
+    console.error('Error calling get_fan_dashboard:', error)
     return {
       success: false,
       error: error.message || 'Unknown error',

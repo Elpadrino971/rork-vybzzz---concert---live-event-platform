@@ -110,12 +110,12 @@ export default function AffiliateDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
+      <header className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-4xl font-bold mb-4">{t('dashboard', 'affiliate.title')}</h1>
-              <p className="text-blue-100 text-lg">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">{t('dashboard', 'affiliate.title')}</h1>
+              <p className="text-blue-100 text-base sm:text-lg">
                 {t('dashboard', 'affiliate.subtitle')}
               </p>
               <p className="text-blue-200 text-sm mt-2">
@@ -129,17 +129,17 @@ export default function AffiliateDashboard() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Referral Code Card */}
-        <div className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl shadow-lg p-8 mb-8 text-white">
-          <h2 className="text-2xl font-bold mb-4">
+        <div className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl shadow-lg p-6 sm:p-8 mb-8 text-white">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">
             {t('dashboard', 'affiliate.referralCode.title')}
           </h2>
-          <div className="flex items-center gap-4 flex-wrap">
-            <div className="bg-white text-gray-800 px-6 py-4 rounded-lg font-mono text-2xl font-bold">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <div className="bg-white text-gray-800 px-4 sm:px-6 py-3 sm:py-4 rounded-lg font-mono text-lg sm:text-2xl font-bold break-all">
               {data.affiliate.referral_code}
             </div>
             <button
               onClick={copyReferralCode}
-              className="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-lg transition font-semibold"
+              className="bg-white/20 hover:bg-white/30 px-4 sm:px-6 py-3 sm:py-4 rounded-lg transition font-semibold whitespace-nowrap"
             >
               📋 {copied ? t('dashboard', 'affiliate.referralCode.copied') : t('common', 'actions.copy')}
             </button>
@@ -158,7 +158,7 @@ export default function AffiliateDashboard() {
             <div className="text-gray-600 dark:text-gray-400 mb-2">
               {t('dashboard', 'affiliate.stats.level')}
             </div>
-            <div className="text-3xl font-bold text-gray-800 dark:text-white">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
               {t('dashboard', 'affiliate.stats.level')} {data.affiliate.level}
             </div>
           </div>
@@ -167,7 +167,7 @@ export default function AffiliateDashboard() {
             <div className="text-gray-600 dark:text-gray-400 mb-2">
               {t('dashboard', 'affiliate.stats.totalReferrals')}
             </div>
-            <div className="text-3xl font-bold text-gray-800 dark:text-white">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
               {data.stats.totalReferrals}
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function AffiliateDashboard() {
             <div className="text-gray-600 dark:text-gray-400 mb-2">
               {t('dashboard', 'affiliate.stats.pendingEarnings')}
             </div>
-            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+            <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400">
               {data.stats.pendingEarnings.toFixed(2)}€
             </div>
           </div>
@@ -185,7 +185,7 @@ export default function AffiliateDashboard() {
             <div className="text-gray-600 dark:text-gray-400 mb-2">
               {t('dashboard', 'affiliate.stats.paidEarnings')}
             </div>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+            <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
               {data.stats.paidEarnings.toFixed(2)}€
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function AffiliateDashboard() {
               <div className="text-blue-600 dark:text-blue-400 font-bold text-lg mb-2">
                 {t('dashboard', 'affiliate.commissionRates.level1')}
               </div>
-              <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+              <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">
                 {t('dashboard', 'affiliate.commissionRates.rate', { rate: '2.5' })}
               </div>
             </div>
@@ -210,7 +210,7 @@ export default function AffiliateDashboard() {
               <div className="text-purple-600 dark:text-purple-400 font-bold text-lg mb-2">
                 {t('dashboard', 'affiliate.commissionRates.level2')}
               </div>
-              <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+              <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">
                 {t('dashboard', 'affiliate.commissionRates.rate', { rate: '1.5' })}
               </div>
             </div>
@@ -219,7 +219,7 @@ export default function AffiliateDashboard() {
               <div className="text-pink-600 dark:text-pink-400 font-bold text-lg mb-2">
                 {t('dashboard', 'affiliate.commissionRates.level3')}
               </div>
-              <div className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+              <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-2">
                 {t('dashboard', 'affiliate.commissionRates.rate', { rate: '1' })}
               </div>
             </div>

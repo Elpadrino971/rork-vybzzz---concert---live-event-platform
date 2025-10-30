@@ -45,12 +45,12 @@ export default function AffiliateRegisterPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full">
+      <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
             Programme d'Affiliation VyBzzZ
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm sm:text-base">
             Gagnez des commissions en parrainant des fans!
           </p>
         </div>
@@ -102,7 +102,7 @@ export default function AffiliateRegisterPage() {
         {/* Additional Benefits */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <div className="flex items-start gap-3">
-            <div className="text-2xl">💰</div>
+            <div className="text-xl sm:text-2xl">💰</div>
             <div>
               <div className="font-semibold text-gray-800">Revenus passifs</div>
               <p className="text-gray-600 text-sm">
@@ -112,7 +112,7 @@ export default function AffiliateRegisterPage() {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="text-2xl">📊</div>
+            <div className="text-xl sm:text-2xl">📊</div>
             <div>
               <div className="font-semibold text-gray-800">Tableau de bord</div>
               <p className="text-gray-600 text-sm">
@@ -122,7 +122,7 @@ export default function AffiliateRegisterPage() {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="text-2xl">🔗</div>
+            <div className="text-xl sm:text-2xl">🔗</div>
             <div>
               <div className="font-semibold text-gray-800">Code unique</div>
               <p className="text-gray-600 text-sm">
@@ -132,7 +132,7 @@ export default function AffiliateRegisterPage() {
           </div>
 
           <div className="flex items-start gap-3">
-            <div className="text-2xl">💳</div>
+            <div className="text-xl sm:text-2xl">💳</div>
             <div>
               <div className="font-semibold text-gray-800">Paiements rapides</div>
               <p className="text-gray-600 text-sm">
@@ -160,7 +160,10 @@ export default function AffiliateRegisterPage() {
               value={parentReferralCode}
               onChange={(e) => setParentReferralCode(e.target.value.toUpperCase())}
               placeholder="ABCD1234"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
             />
             <p className="text-xs text-gray-500 mt-1">
               Si quelqu'un vous a parrainé, entrez son code ici

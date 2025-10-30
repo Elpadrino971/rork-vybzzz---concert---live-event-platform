@@ -88,6 +88,7 @@ export default async function EventDetailPage({ params }: PageProps) {
                   src={event.cover_image_url}
                   alt={event.title}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
                 {event.status === 'scheduled' && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -129,6 +130,7 @@ export default async function EventDetailPage({ params }: PageProps) {
                       src={event.artist.profile.avatar_url}
                       alt={event.artist.stage_name}
                       className="w-16 h-16 rounded-full"
+                      loading="lazy"
                     />
                   )}
                   <div>

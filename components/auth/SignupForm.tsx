@@ -104,7 +104,8 @@ export default function SignupForm() {
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+            autoComplete="name"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
             placeholder="Jean Dupont"
           />
         </div>
@@ -119,7 +120,9 @@ export default function SignupForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+            autoComplete="email"
+            inputMode="email"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
             placeholder="votre@email.com"
           />
         </div>
@@ -135,7 +138,8 @@ export default function SignupForm() {
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+            autoComplete="new-password"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
             placeholder="••••••••"
           />
           <p className="mt-1 text-xs text-gray-500">Minimum 6 caractères</p>
@@ -147,7 +151,7 @@ export default function SignupForm() {
             <button
               type="button"
               onClick={() => setUserType('fan')}
-              className={`px-3 py-2 rounded-lg border-2 transition ${
+              className={`px-3 py-3 rounded-lg border-2 transition text-sm font-medium ${
                 userType === 'fan'
                   ? 'border-purple-600 bg-purple-50 text-purple-700'
                   : 'border-gray-300 hover:border-gray-400'
@@ -158,7 +162,7 @@ export default function SignupForm() {
             <button
               type="button"
               onClick={() => setUserType('artist')}
-              className={`px-3 py-2 rounded-lg border-2 transition ${
+              className={`px-3 py-3 rounded-lg border-2 transition text-sm font-medium ${
                 userType === 'artist'
                   ? 'border-pink-600 bg-pink-50 text-pink-700'
                   : 'border-gray-300 hover:border-gray-400'
@@ -169,7 +173,7 @@ export default function SignupForm() {
             <button
               type="button"
               onClick={() => setUserType('affiliate')}
-              className={`px-3 py-2 rounded-lg border-2 transition ${
+              className={`px-3 py-3 rounded-lg border-2 transition text-sm font-medium ${
                 userType === 'affiliate'
                   ? 'border-blue-600 bg-blue-50 text-blue-700'
                   : 'border-gray-300 hover:border-gray-400'
@@ -183,7 +187,7 @@ export default function SignupForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+          className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
         >
           {loading ? 'Inscription...' : "S'inscrire"}
         </button>
@@ -202,7 +206,7 @@ export default function SignupForm() {
         <button
           onClick={handleGoogleSignup}
           disabled={loading}
-          className="mt-4 w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+          className="mt-4 w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path

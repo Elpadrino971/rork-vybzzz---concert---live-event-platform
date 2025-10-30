@@ -23,6 +23,7 @@ export default function EventCard({ event }: EventCardProps) {
               src={event.cover_image_url}
               alt={event.title}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-white text-4xl sm:text-6xl">

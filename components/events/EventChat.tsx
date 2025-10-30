@@ -112,9 +112,9 @@ export default function EventChat({ eventId, userId }: EventChatProps) {
   }
 
   return (
-    <div className="flex flex-col h-96">
+    <div className="flex flex-col h-80 sm:h-96">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2">
+      <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2 overscroll-contain">
         {messages.length === 0 && (
           <p className="text-center text-gray-500 text-sm mt-8">
             Soyez le premier à envoyer un message!
@@ -128,6 +128,7 @@ export default function EventChat({ eventId, userId }: EventChatProps) {
                 src={msg.user.avatar_url}
                 alt={msg.user.full_name}
                 className="w-8 h-8 rounded-full flex-shrink-0"
+                loading="lazy"
               />
             ) : (
               <div className="w-8 h-8 rounded-full bg-purple-200 flex items-center justify-center flex-shrink-0 text-purple-600 font-semibold text-sm">
@@ -160,12 +161,15 @@ export default function EventChat({ eventId, userId }: EventChatProps) {
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Écrivez un message..."
           maxLength={200}
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+          className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="sentences"
         />
         <button
           type="submit"
           disabled={loading || !newMessage.trim()}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
         >
           Envoyer
         </button>

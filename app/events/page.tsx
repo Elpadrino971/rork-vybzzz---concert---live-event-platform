@@ -21,22 +21,22 @@ export default async function EventsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-16">
+      <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4">
-          <h1 className="text-5xl font-bold mb-4">Concerts en Direct</h1>
-          <p className="text-xl text-purple-100">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">Concerts en Direct</h1>
+          <p className="text-lg sm:text-xl text-purple-100">
             Découvrez les meilleurs artistes en live streaming
           </p>
 
           {/* Happy Hour Banner */}
           {isHappy && (
-            <div className="mt-6 bg-yellow-400 text-purple-900 px-6 py-3 rounded-lg inline-block font-bold text-lg animate-pulse">
+            <div className="mt-6 bg-yellow-400 text-purple-900 px-4 sm:px-6 py-3 rounded-lg inline-block font-bold text-base sm:text-lg animate-pulse">
               🎉 Happy Hour en cours! Billets à 4,99€
             </div>
           )}
           {!isHappy && (
-            <div className="mt-6 bg-white/20 backdrop-blur px-6 py-3 rounded-lg inline-block">
-              <p className="text-white">
+            <div className="mt-6 bg-white/20 backdrop-blur px-4 sm:px-6 py-3 rounded-lg inline-block">
+              <p className="text-white text-sm sm:text-base">
                 Prochain Happy Hour: <span className="font-bold">{happyHourTime}</span> - Billets à
                 4,99€
               </p>
@@ -51,7 +51,7 @@ export default async function EventsPage() {
         <div className="mb-8 flex gap-4">
           <Link
             href="/"
-            className="px-4 py-2 bg-white rounded-lg shadow hover:shadow-md transition"
+            className="px-4 py-3 bg-white rounded-lg shadow hover:shadow-md transition font-medium"
           >
             ← Accueil
           </Link>

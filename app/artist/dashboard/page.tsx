@@ -113,20 +113,20 @@ export default function ArtistDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-12">
+      <header className="bg-gradient-to-r from-purple-600 to-pink-600 text-white py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold mb-2">{t('dashboard', 'artist.title')}</h1>
-              <p className="text-purple-100 text-lg">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">{t('dashboard', 'artist.title')}</h1>
+              <p className="text-purple-100 text-base sm:text-lg">
                 {t('dashboard', 'artist.welcome', { name: data.artist.stage_name })}
               </p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
               <LanguageSwitcher />
               <Link
                 href="/artist/events/create"
-                className="bg-white text-purple-600 px-6 py-3 rounded-lg hover:bg-gray-100 transition font-semibold"
+                className="bg-white text-purple-600 px-4 sm:px-6 py-3 rounded-lg hover:bg-gray-100 transition font-semibold text-sm sm:text-base flex-1 sm:flex-initial text-center"
               >
                 + {t('dashboard', 'artist.createEvent')}
               </Link>
@@ -142,7 +142,7 @@ export default function ArtistDashboard() {
             <div className="text-gray-600 dark:text-gray-400 mb-2">
               {t('dashboard', 'artist.stats.totalEvents')}
             </div>
-            <div className="text-3xl font-bold text-gray-800 dark:text-white">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
               {data.stats.totalEvents}
             </div>
           </div>
@@ -151,7 +151,7 @@ export default function ArtistDashboard() {
             <div className="text-gray-600 dark:text-gray-400 mb-2">
               {t('dashboard', 'artist.stats.ticketsSold')}
             </div>
-            <div className="text-3xl font-bold text-gray-800 dark:text-white">
+            <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
               {data.stats.ticketsSold}
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function ArtistDashboard() {
             <div className="text-gray-600 dark:text-gray-400 mb-2">
               {t('dashboard', 'artist.stats.totalRevenue')}
             </div>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+            <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
               {data.stats.totalRevenue.toFixed(2)}€
             </div>
           </div>
@@ -207,8 +207,8 @@ export default function ArtistDashboard() {
 
           {!data.events || data.events.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">🎵</div>
-              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+              <div className="text-4xl sm:text-6xl mb-4">🎵</div>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-2">
                 {t('dashboard', 'artist.events.noEvents')}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">

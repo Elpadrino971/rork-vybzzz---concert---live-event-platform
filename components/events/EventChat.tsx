@@ -1,121 +1,103 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { supabase } from '@/lib/supabase/client'
 import { format } from 'date-fns'
-
-interface Message {
-  id: string
-  user_id: string
-  message: string
-  created_at: string
-  user?: {
-    full_name: string
-    avatar_url?: string
-  }
-}
+import {
+  useEventChat,
+  useChatPresence,
+  useTypingIndicator,
+  checkRateLimit,
+  isUserBanned,
+  ChatMessage,
+} from '@/lib/chat'
 
 interface EventChatProps {
   eventId: string
   userId: string
+  isArtist?: boolean
+  onModeration?: () => void
 }
 
-export default function EventChat({ eventId, userId }: EventChatProps) {
-  const [messages, setMessages] = useState<Message[]>([])
+export default function EventChat({ eventId, userId, isArtist = false, onModeration }: EventChatProps) {
   const [newMessage, setNewMessage] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [isBanned, setIsBanned] = useState(false)
+  const [rateLimitError, setRateLimitError] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  // Chat hooks
+  const { messages, loading, sendMessage } = useEventChat(eventId, userId)
+  const { onlineCount } = useChatPresence(eventId, userId)
+  const { typingUsers, startTyping, stopTyping } = useTypingIndicator(eventId, userId)
+
+  // Check if user is banned
   useEffect(() => {
-    // Load initial messages
-    loadMessages()
+    isUserBanned(eventId, userId).then(setIsBanned)
+  }, [eventId, userId])
 
-    // Subscribe to new messages
-    const channel = supabase
-      .channel(`event-chat-${eventId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'event_messages',
-          filter: `event_id=eq.${eventId}`,
-        },
-        async (payload: any) => {
-          // Fetch user info for the new message
-          const { data: user } = await supabase
-            .from('profiles')
-            .select('full_name, avatar_url')
-            .eq('id', payload.new.user_id)
-            .single()
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              ...payload.new,
-              user,
-            } as Message,
-          ])
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [eventId])
-
+  // Auto-scroll to bottom
   useEffect(() => {
-    scrollToBottom()
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const loadMessages = async () => {
-    const { data, error } = await supabase
-      .from('event_messages')
-      .select('*, user:profiles(full_name, avatar_url)')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: true })
-      .limit(100)
-
-    if (!error && data) {
-      setMessages(data as Message[])
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewMessage(e.target.value)
+    if (e.target.value.length > 0) {
+      startTyping()
+    } else {
+      stopTyping()
     }
-  }
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!newMessage.trim() || loading) return
+    if (!newMessage.trim() || loading || isBanned) return
 
-    setLoading(true)
+    // Rate limit check
+    if (!checkRateLimit(userId, 5, 10000)) {
+      setRateLimitError(true)
+      setTimeout(() => setRateLimitError(false), 3000)
+      return
+    }
 
-    try {
-      const { error } = await supabase.from('event_messages').insert({
-        event_id: eventId,
-        user_id: userId,
-        message: newMessage.trim(),
-      })
+    stopTyping()
 
-      if (error) throw error
+    const result = await sendMessage(newMessage)
 
+    if (result.success) {
       setNewMessage('')
-    } catch (error) {
-      console.error('Error sending message:', error)
-      alert('Erreur lors de l\'envoi du message')
-    } finally {
-      setLoading(false)
+    } else {
+      alert(result.error || 'Erreur lors de l\'envoi du message')
     }
   }
 
   return (
     <div className="flex flex-col h-80 sm:h-96">
+      {/* Header with online count */}
+      <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-sm text-gray-600 font-medium">
+            {onlineCount} {onlineCount === 1 ? 'personne' : 'personnes'} en ligne
+          </span>
+        </div>
+        {isArtist && onModeration && (
+          <button
+            onClick={onModeration}
+            className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded text-gray-700 transition"
+          >
+            Modération
+          </button>
+        )}
+      </div>
+
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-3 mb-4 pr-2 overscroll-contain">
-        {messages.length === 0 && (
+      <div className="flex-1 overflow-y-auto space-y-3 mb-2 pr-2 overscroll-contain">
+        {loading && messages.length === 0 && (
+          <p className="text-center text-gray-500 text-sm mt-8">Chargement...</p>
+        )}
+
+        {!loading && messages.length === 0 && (
           <p className="text-center text-gray-500 text-sm mt-8">
             Soyez le premier à envoyer un message!
           </p>
@@ -126,7 +108,7 @@ export default function EventChat({ eventId, userId }: EventChatProps) {
             {msg.user?.avatar_url ? (
               <img
                 src={msg.user.avatar_url}
-                alt={msg.user.full_name}
+                alt={msg.user.full_name || 'User'}
                 className="w-8 h-8 rounded-full flex-shrink-0"
                 loading="lazy"
               />
@@ -150,25 +132,55 @@ export default function EventChat({ eventId, userId }: EventChatProps) {
           </div>
         ))}
 
+        {/* Typing indicator */}
+        {typingUsers.length > 0 && (
+          <div className="flex gap-2 items-center text-xs text-gray-500 italic">
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+            <span>
+              {typingUsers.length === 1
+                ? `${typingUsers[0].full_name} est en train d'écrire...`
+                : `${typingUsers.length} personnes écrivent...`}
+            </span>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Error messages */}
+      {isBanned && (
+        <div className="mb-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-xs text-red-700">
+          Vous avez été banni du chat.
+        </div>
+      )}
+
+      {rateLimitError && (
+        <div className="mb-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-700">
+          Vous envoyez trop de messages. Veuillez patienter.
+        </div>
+      )}
 
       {/* Input */}
       <form onSubmit={handleSendMessage} className="flex gap-2">
         <input
           type="text"
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Écrivez un message..."
+          onChange={handleInputChange}
+          placeholder={isBanned ? 'Vous êtes banni' : 'Écrivez un message...'}
           maxLength={200}
-          className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+          disabled={isBanned}
+          className="flex-1 px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
           autoComplete="off"
           autoCorrect="off"
           autoCapitalize="sentences"
         />
         <button
           type="submit"
-          disabled={loading || !newMessage.trim()}
+          disabled={loading || !newMessage.trim() || isBanned}
           className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
         >
           Envoyer

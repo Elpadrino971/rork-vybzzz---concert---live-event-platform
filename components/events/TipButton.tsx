@@ -96,7 +96,7 @@ export default function TipButton({ artistId, eventId }: TipButtonProps) {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Montant rapide
               </label>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {TIP_AMOUNTS.map((amount) => (
                   <button
                     key={amount}

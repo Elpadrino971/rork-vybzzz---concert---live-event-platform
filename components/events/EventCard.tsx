@@ -25,7 +25,7 @@ export default function EventCard({ event }: EventCardProps) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white text-6xl">
+            <div className="w-full h-full flex items-center justify-center text-white text-4xl sm:text-6xl">
               🎵
             </div>
           )}
@@ -96,7 +96,7 @@ export default function EventCard({ event }: EventCardProps) {
               </div>
             </div>
 
-            <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+            <button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition">
               {isLive ? 'Rejoindre' : 'Acheter'}
             </button>
           </div>

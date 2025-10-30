@@ -4,10 +4,10 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500">
       <div className="text-center space-y-8 p-8">
-        <h1 className="text-6xl font-bold text-white mb-4">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
           VyBzzZ
         </h1>
-        <p className="text-2xl text-white/90 mb-8">
+        <p className="text-xl sm:text-2xl text-white/90 mb-8">
           La plateforme de concerts en direct
         </p>
 

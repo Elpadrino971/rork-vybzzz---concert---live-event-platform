@@ -74,9 +74,9 @@ export default async function EventDetailPage({ params }: PageProps) {
 
             {isLive && !hasTicket && (
               <div className="bg-gray-900 aspect-video rounded-xl flex items-center justify-center">
-                <div className="text-center text-white">
-                  <div className="text-6xl mb-4">🔒</div>
-                  <h3 className="text-2xl font-bold mb-2">Achetez un billet pour regarder</h3>
+                <div className="text-center text-white px-4">
+                  <div className="text-4xl sm:text-6xl mb-4">🔒</div>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">Achetez un billet pour regarder</h3>
                   <p className="text-gray-300">Ce concert est en direct maintenant!</p>
                 </div>
               </div>
@@ -91,9 +91,9 @@ export default async function EventDetailPage({ params }: PageProps) {
                 />
                 {event.status === 'scheduled' && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <div className="text-center text-white">
-                      <div className="text-6xl mb-4">⏰</div>
-                      <p className="text-xl">
+                    <div className="text-center text-white px-4">
+                      <div className="text-4xl sm:text-6xl mb-4">⏰</div>
+                      <p className="text-lg sm:text-xl">
                         Commence le{' '}
                         {format(scheduledDate, "d MMMM 'à' HH:mm", { locale: fr })}
                       </p>
@@ -119,7 +119,7 @@ export default async function EventDetailPage({ params }: PageProps) {
                 </div>
               )}
 
-              <h1 className="text-4xl font-bold text-gray-800 mb-4">{event.title}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-4">{event.title}</h1>
 
               {/* Artist Info */}
               {event.artist && (
@@ -201,7 +201,7 @@ export default async function EventDetailPage({ params }: PageProps) {
                     {event.ticket_price.toFixed(2)}€
                   </div>
                 )}
-                <div className="text-4xl font-bold text-gray-800 mb-2">
+                <div className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">
                   {price.toFixed(2)}€
                 </div>
                 <p className="text-gray-600">Par personne</p>

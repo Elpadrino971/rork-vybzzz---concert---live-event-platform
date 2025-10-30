@@ -101,7 +101,10 @@ export default function PurchaseTicketButton({
               value={affiliateCode}
               onChange={(e) => setAffiliateCode(e.target.value.toUpperCase())}
               placeholder="ABCD1234"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent text-sm"
             />
           </div>
         )}

@@ -108,9 +108,9 @@ export default function FanDashboard() {
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
                 {t('dashboard', 'fan.title')}
               </h1>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -172,6 +172,7 @@ export default function FanDashboard() {
                           src={ticket.event.image_url}
                           alt={ticket.event.title}
                           className="w-20 h-20 object-cover rounded-lg"
+                          loading="lazy"
                         />
                       )}
                       <div className="flex-1 min-w-0">
@@ -191,7 +192,7 @@ export default function FanDashboard() {
                         </p>
                       </div>
                     </div>
-                    <button className="mt-4 w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+                    <button className="mt-4 w-full bg-purple-600 text-white py-3 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium">
                       {t('dashboard', 'fan.upcomingTickets.viewTicket')}
                     </button>
                   </div>
@@ -225,6 +226,7 @@ export default function FanDashboard() {
                         src={artist.profile_image_url}
                         alt={artist.stage_name}
                         className="w-20 h-20 object-cover rounded-full mx-auto mb-3"
+                        loading="lazy"
                       />
                     )}
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -255,7 +257,7 @@ export default function FanDashboard() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {t('dashboard', 'fan.spending.tickets')}
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mt-1">
                   {data.spending.tickets.toFixed(2)} €
                 </p>
               </div>
@@ -263,7 +265,7 @@ export default function FanDashboard() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {t('dashboard', 'fan.spending.tips')}
                 </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mt-1">
                   {data.spending.tips.toFixed(2)} €
                 </p>
               </div>
@@ -271,7 +273,7 @@ export default function FanDashboard() {
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {t('dashboard', 'fan.spending.total')}
                 </p>
-                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
+                <p className="text-xl sm:text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
                   {data.spending.total.toFixed(2)} €
                 </p>
               </div>
@@ -289,9 +291,9 @@ function StatCard({ title, value, icon }: { title: string; value: string | numbe
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{value}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mt-2">{value}</p>
         </div>
-        <div className="text-4xl">{icon}</div>
+        <div className="text-3xl sm:text-4xl">{icon}</div>
       </div>
     </div>
   )

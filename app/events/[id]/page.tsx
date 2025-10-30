@@ -196,7 +196,7 @@ export default async function EventDetailPage({ params }: PageProps) {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Ticket Purchase Card */}
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-8">
+            <div className="bg-white rounded-xl shadow-lg p-6 lg:sticky lg:top-8">
               <div className="mb-4">
                 {isHappyHour && event.ticket_price !== price && (
                   <div className="text-gray-400 line-through text-lg mb-1">

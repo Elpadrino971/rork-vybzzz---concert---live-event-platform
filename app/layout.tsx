@@ -3,6 +3,9 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { CookieConsent } from '@/components/legal/cookie-consent'
 import { I18nProvider } from '@/contexts/I18nContext'
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
+import MobileNav from '@/components/MobileNav'
+import ScrollToTop from '@/components/ScrollToTop'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -30,7 +33,12 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <I18nProvider>
-          {children}
+          <ServiceWorkerRegistration />
+          <MobileNav />
+          <ScrollToTop />
+          <div className="lg:pt-0">
+            {children}
+          </div>
           <CookieConsent />
         </I18nProvider>
       </body>

@@ -23,6 +23,7 @@
     "prebuild": "npm run check-env"
   },
   "dependencies": {
+    "@react-email/components": "^0.5.7",
     "@sentry/nextjs": "^10.22.0",
     "@stripe/stripe-js": "^4.0.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
@@ -36,6 +37,8 @@
     "next": "^14.2.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
+    "react-email": "^4.3.2",
+    "resend": "^6.3.0",
     "stripe": "^16.0.0",
     "tailwind-merge": "^2.4.0",
     "zod": "^3.23.0"

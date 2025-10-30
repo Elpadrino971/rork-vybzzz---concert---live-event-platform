@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe-mobile'
 import { logger, createPerformanceTracker } from '@/lib/logger'
 import { env } from '@/lib/env'
+import { emailHelpers } from '@/lib/email'
 
 /**
  * Payout Cron Job - J+21
@@ -237,6 +238,38 @@ export async function GET(request: NextRequest) {
               .from('commissions')
               .update({ status: 'paid' })
               .in('id', commissions.map((c: any) => c.id))
+          }
+
+          // Send payout notification email to artist
+          try {
+            const { data: artistProfile } = await supabase
+              .from('profiles')
+              .select('email, full_name')
+              .eq('id', event.artist_id)
+              .single()
+
+            if (artistProfile?.email) {
+              // Calculate period (month/year from event date)
+              const eventEndDate = new Date(event.ended_at)
+              const period = eventEndDate.toLocaleDateString('fr-FR', {
+                month: 'long',
+                year: 'numeric'
+              })
+
+              await emailHelpers.sendPayoutNotification(artistProfile.email, {
+                artistName: artistProfile.full_name || artist.stage_name || 'Artiste',
+                amount: payoutAmount.toFixed(2),
+                period: period,
+                transferId: stripePayout.id,
+              })
+
+              logger.info('Payout notification email sent', {
+                payoutId: payout.id,
+                email: artistProfile.email,
+              })
+            }
+          } catch (emailError) {
+            logger.error('Failed to send payout notification email', emailError instanceof Error ? emailError : new Error(String(emailError)))
           }
 
           logger.payment('payout_created', payoutAmount, {

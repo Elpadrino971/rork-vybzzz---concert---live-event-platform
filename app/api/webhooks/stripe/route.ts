@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe'
 import { createClient } from '@/lib/supabase/server'
 import { confirmTicketPurchase, completeTipPayment, cancelTicket } from '@/lib/supabase-rpc'
 import { logger } from '@/lib/logger'
+import { emailHelpers } from '@/lib/email'
 import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
@@ -108,6 +109,52 @@ export async function POST(request: NextRequest) {
                 event_id: result.data?.event_id,
               },
             })
+
+            // Send ticket confirmation email
+            try {
+              const { data: ticket } = await supabase
+                .from('tickets')
+                .select(`
+                  id,
+                  purchase_price,
+                  event:events(
+                    title,
+                    event_date,
+                    event_time,
+                    artist:artists(stage_name)
+                  ),
+                  user:profiles!tickets_user_id_fkey(full_name, email)
+                `)
+                .eq('id', result.data?.ticket_id)
+                .single()
+
+              if (ticket?.user?.email) {
+                const event = Array.isArray(ticket.event) ? ticket.event[0] : ticket.event as any
+                const artist = Array.isArray(event?.artist) ? event.artist[0] : event?.artist as any
+                const user = Array.isArray(ticket.user) ? ticket.user[0] : ticket.user as any
+
+                await emailHelpers.sendTicketConfirmation(user.email, {
+                  userName: user.full_name || 'Fan',
+                  eventTitle: event.title || 'Concert Live',
+                  eventDate: new Date(event.event_date).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  }),
+                  eventTime: event.event_time || '20:00',
+                  ticketPrice: ticket.purchase_price?.toString() || '0',
+                  ticketId: ticket.id,
+                  artistName: artist?.stage_name || 'Artiste',
+                })
+
+                logger.info('Ticket confirmation email sent', {
+                  ticketId: ticket.id,
+                  email: user.email,
+                })
+              }
+            } catch (emailError) {
+              logger.error('Failed to send ticket confirmation email', emailError instanceof Error ? emailError : new Error(String(emailError)))
+            }
           }
         } else if (metadata.type === 'tip') {
           // ✅ AMÉLIORATION: Atomic transaction via RPC
@@ -130,6 +177,48 @@ export async function POST(request: NextRequest) {
               .from('transactions')
               .update({ status: 'completed' })
               .eq('stripe_payment_id', paymentIntent.id)
+
+            // Send tip notification email to artist
+            try {
+              const { data: tip } = await supabase
+                .from('tips')
+                .select(`
+                  id,
+                  amount,
+                  message,
+                  artist:artists(
+                    profile:profiles!artists_id_fkey(full_name, email)
+                  ),
+                  fan:profiles!tips_fan_id_fkey(full_name),
+                  event:events(title)
+                `)
+                .eq('id', result.data?.tip_id)
+                .single()
+
+              if (tip) {
+                const artist = Array.isArray(tip.artist) ? tip.artist[0] : tip.artist as any
+                const profile = Array.isArray(artist?.profile) ? artist.profile[0] : artist?.profile as any
+                const fan = Array.isArray(tip.fan) ? tip.fan[0] : tip.fan as any
+                const event = Array.isArray(tip.event) ? tip.event[0] : tip.event as any
+
+                if (profile?.email) {
+                  await emailHelpers.sendTipNotification(profile.email, {
+                    artistName: profile.full_name || 'Artiste',
+                    amount: tip.amount?.toString() || '0',
+                    fanName: fan?.full_name || 'Un fan',
+                    message: tip.message || '',
+                    eventTitle: event?.title || '',
+                  })
+
+                  logger.info('Tip notification email sent', {
+                    tipId: tip.id,
+                    email: profile.email,
+                  })
+                }
+              }
+            } catch (emailError) {
+              logger.error('Failed to send tip notification email', emailError instanceof Error ? emailError : new Error(String(emailError)))
+            }
           }
         }
 

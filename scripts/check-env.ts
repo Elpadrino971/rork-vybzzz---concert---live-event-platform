@@ -104,12 +104,30 @@ async function main() {
   log(`📄 Checking: ${envFile}\n`, 'cyan')
 
   // Load environment variables
-  const env = loadEnvFile(envPath)
+  let env = loadEnvFile(envPath)
 
+  // If file doesn't exist or is empty, use process.env (for production/CI/Railway)
   if (Object.keys(env).length === 0) {
-    log(`❌ File not found or empty: ${envFile}`, 'red')
-    log(`   Create it by copying: cp .env.example ${envFile}`, 'yellow')
-    process.exit(1)
+    // In production/CI/Railway, variables are set via environment, not .env files
+    const isProduction = process.env.NODE_ENV === 'production' || 
+                        process.env.RAILWAY_ENVIRONMENT || 
+                        process.env.CI ||
+                        process.env.RAILWAY_SERVICE_NAME ||
+                        !fs.existsSync(envPath) // If file doesn't exist, assume production
+    
+    if (isProduction) {
+      log(`⚠️  File not found: ${envFile}`, 'yellow')
+      log(`   Using environment variables from system (production/CI mode)`, 'cyan')
+      // Use process.env instead
+      env = process.env as Record<string, string>
+    } else {
+      log(`❌ File not found or empty: ${envFile}`, 'red')
+      log(`   Create it by copying: cp .env.example ${envFile}`, 'yellow')
+      process.exit(1)
+    }
+  } else {
+    // Merge with process.env (process.env takes precedence)
+    env = { ...env, ...process.env }
   }
 
   let criticalMissing = 0

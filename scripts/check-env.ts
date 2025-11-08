@@ -111,8 +111,9 @@ async function main() {
     // In production/CI/Railway, variables are set via environment, not .env files
     const isProduction = process.env.NODE_ENV === 'production' || 
                         process.env.RAILWAY_ENVIRONMENT || 
-                        process.env.CI ||
                         process.env.RAILWAY_SERVICE_NAME ||
+                        process.env.RAILWAY ||
+                        process.env.CI ||
                         !fs.existsSync(envPath) // If file doesn't exist, assume production
     
     if (isProduction) {

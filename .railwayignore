@@ -1,0 +1,12 @@
+# Ignore root Next.js files during Railway build
+package.json
+package-lock.json
+next.config.js
+tsconfig.json
+app/
+components/
+lib/
+public/
+scripts/check-env.ts
+node_modules/
+

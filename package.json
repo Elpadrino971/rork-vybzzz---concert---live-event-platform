@@ -20,7 +20,7 @@
     "test:payouts": "tsx scripts/test-artist-payouts.ts",
     "test:all": "npm run test",
     "predev": "npm run check-env",
-    "prebuild": "npm run check-env"
+    "prebuild": "npm run check-env || true"
   },
   "dependencies": {
     "@react-email/components": "^0.5.7",

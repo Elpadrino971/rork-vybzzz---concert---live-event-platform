@@ -1,0 +1,41 @@
+{
+  "name": "vybzzz-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Vybzzz Concert Platform",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "bash scripts/test-endpoints.sh",
+    "test:api": "ts-node scripts/test-api.ts"
+  },
+  "keywords": [
+    "vybzzz",
+    "concert",
+    "streaming",
+    "api"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "stripe": "^14.25.0",
+    "openai": "^4.47.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.1",
+    "@supabase/supabase-js": "^2.39.3",
+    "multer": "^1.4.5-lts.1",
+    "expo-server-sdk": "^3.7.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^20.11.5",
+    "@types/multer": "^1.4.11",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}
+

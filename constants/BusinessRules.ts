@@ -20,8 +20,8 @@ export const SUBSCRIPTION_TIERS = {
     maxTicketPrice: 12,
     features: [
       '50/50 revenue split',
-      'Tickets: 5-12¬',
-      'Événements illimités',
+      'Tickets: 5-12â‚¬',
+      'Ã‰vÃ©nements illimitÃ©s',
       'Dashboard analytics',
       'Support email',
     ],
@@ -36,9 +36,9 @@ export const SUBSCRIPTION_TIERS = {
     maxTicketPrice: 18,
     features: [
       '60/40 revenue split',
-      'Tickets: 8-18¬',
-      'Événements illimités',
-      'Dashboard analytics avancé',
+      'Tickets: 8-18â‚¬',
+      'Ã‰vÃ©nements illimitÃ©s',
+      'Dashboard analytics avancÃ©',
       'Support prioritaire',
       'Badge "Pro"',
     ],
@@ -53,8 +53,8 @@ export const SUBSCRIPTION_TIERS = {
     maxTicketPrice: 25,
     features: [
       '70/30 revenue split',
-      'Tickets: 12-25¬',
-      'Événements illimités',
+      'Tickets: 12-25â‚¬',
+      'Ã‰vÃ©nements illimitÃ©s',
       'Dashboard premium',
       'Support VIP 24/7',
       'Badge "Elite"',
@@ -83,8 +83,8 @@ export const HAPPY_HOUR = {
 export const TIPS = {
   artistShare: 0.9, // Artist receives 90%
   platformFee: 0.1, // Platform keeps 10%
-  minAmount: 1, // Minimum tip: 1¬
-  maxAmount: 500, // Maximum tip: 500¬
+  minAmount: 1, // Minimum tip: 1â‚¬
+  maxAmount: 500, // Maximum tip: 500â‚¬
   suggestedAmounts: [2, 5, 10, 20, 50], // Quick tip buttons
 } as const
 
@@ -93,8 +93,8 @@ export const TIPS = {
 // ============================================
 
 export const APPORTEUR = {
-  investmentCost: 2997, // Initial investment: 2,997¬
-  monthlyFee: 19.99, // Monthly subscription: 19.99¬
+  investmentCost: 2997, // Initial investment: 2,997â‚¬
+  monthlyFee: 19.99, // Monthly subscription: 19.99â‚¬
   commissions: {
     level1: 0.025, // 2.5% on direct referrals
     level2: 0.015, // 1.5% on level 2
@@ -104,16 +104,16 @@ export const APPORTEUR = {
 } as const
 
 // ============================================
-// RESPONSABLES RÉGIONAUX (RR)
+// RESPONSABLES RÃ‰GIONAUX (RR)
 // ============================================
 
 export const RESPONSABLE_REGIONAL = {
   basic: {
-    investmentCost: 4997, // 4,997¬
+    investmentCost: 4997, // 4,997â‚¬
     commissionRate: 0.05, // 5% on all tickets in region
   },
   premium: {
-    investmentCost: 9997, // 9,997¬
+    investmentCost: 9997, // 9,997â‚¬
     commissionRate: 0.3, // 30% on all tickets in region
   },
 } as const
@@ -124,7 +124,7 @@ export const RESPONSABLE_REGIONAL = {
 
 export const PAYOUTS = {
   delayDays: 21, // J+21: Payout 21 days after event ends
-  minAmount: 10, // Minimum payout amount: 10¬
+  minAmount: 10, // Minimum payout amount: 10â‚¬
   currency: 'eur',
   cronSchedule: '0 2 * * *', // Daily at 2 AM
 } as const
@@ -146,7 +146,7 @@ export const GAMIFICATION = {
       'first_timer', // First event attended
       'regular', // 5 events attended
       'super_fan', // 20 events attended
-      'generous', // 50¬ in tips sent
+      'generous', // 50â‚¬ in tips sent
       'social', // 10 shares
       'recruiter', // 5 referrals
     ],
@@ -191,7 +191,7 @@ export const EVENTS = {
 // ============================================
 
 export const REFERRAL = {
-  fanReferralBonus: 5, // 5¬ credit for both referrer and referred
+  fanReferralBonus: 5, // 5â‚¬ credit for both referrer and referred
   shareToUnlock: {
     enabled: true,
     requiredShares: 3, // Share to 3 friends to unlock content

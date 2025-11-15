@@ -1,504 +1,390 @@
-# Deployment Checklist
+# Deployment Guide - Quick Start
 
-Pre-launch checklist for VyBzzZ Platform before the David Guetta concert on **December 31, 2025**.
+**Launch Date**: December 31, 2025 (David Guetta Concert)
+**Days Remaining**: 46 days
+**Last Updated**: November 15, 2025
+
+---
+
+## Overview
+
+This is a quick-start deployment guide for the VyBzzZ Platform. For comprehensive step-by-step instructions, see:
+
+- **[PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md)** - Complete pre-launch checklist with all tasks (recommended starting point)
+- **[PRODUCTION_CONFIG_GUIDE.md](PRODUCTION_CONFIG_GUIDE.md)** - Detailed production configuration for all services
+- **[LEGAL_TEMPLATE.md](LEGAL_TEMPLATE.md)** - Guide for filling legal placeholders
+- **[TODO_ANALYSIS.md](TODO_ANALYSIS.md)** - Detailed analysis of remaining work
+- **[TESTING.md](TESTING.md)** - Integration test suite guide
+
+---
+
+## 🚨 CRITICAL BLOCKERS
+
+Before proceeding with deployment, these MUST be completed:
+
+1. **Company Registration** (2-3 weeks)
+   - Obtain SIRET, RCS, TVA intracommunautaire
+   - See: [LEGAL_TEMPLATE.md](LEGAL_TEMPLATE.md)
+
+2. **David Guetta Rights** (timeline varies)
+   - Contact management for streaming license
+   - Obtain music rights (SACEM/ASCAP)
+   - **Without this, launch is ILLEGAL**
+
+3. **Fill Legal Placeholders** (1 day, after company registration)
+   - Update CGU/CGV pages with company information
+   - See: [LEGAL_TEMPLATE.md](LEGAL_TEMPLATE.md), Section 2
+
+4. **Sign Médiateur Contract** (1-2 weeks)
+   - Required by French law for e-commerce
+   - Cost: €80-€300/year
+
+---
 
 ## Phase 1: Legal Compliance (CRITICAL)
 
-### 1.1 Company Registration
+**📖 See**: [LEGAL_TEMPLATE.md](LEGAL_TEMPLATE.md) for complete guide
+**📖 See**: [PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md), Section 1
 
-**Status**: ⚠️ REQUIRED BEFORE LAUNCH
+### Quick Legal Checklist
 
-Before filling legal pages, you must:
+- [ ] Company registered with RCS (SIRET, RCS, TVA numbers obtained)
+- [ ] Consumer médiateur contract signed
+- [ ] Legal placeholders filled in `app/legal/terms/page.tsx` (lines 43-49)
+- [ ] Legal placeholders filled in `app/legal/page.tsx`
+- [ ] Privacy policy updated with company details
+- [ ] GDPR compliance verified (cookie consent, data export, deletion)
+- [ ] David Guetta copyright/streaming rights obtained
 
-1. **Register the company**
-   - Entity type: SAS (Société par Actions Simplifiée)
-   - Legal name: VyBzzZ SAS
-   - Minimum capital: €1 (can be increased later)
-   - Registration: Greffe du Tribunal de Commerce
+**Files to Update**:
+- `/app/legal/terms/page.tsx` - Replace `[VOTRE SIRET]`, `[VOTRE RCS]`, `[VOTRE ADRESSE]`, etc.
+- `/app/legal/page.tsx` - Update company information
+- `/app/legal/privacy/page.tsx` - Verify GDPR accuracy
 
-2. **Obtain legal identifiers**
-   - ✅ SIRET number (14 digits)
-   - ✅ RCS number (city + registration number)
-   - ✅ TVA intracommunautaire (starts with FR)
-   - ✅ Legal address (siège social)
-   - ✅ Share capital amount
+**⚠️ WARNING**: Platform is ILLEGAL to operate without:
+- Company registration (SIRET/RCS)
+- Proper Terms of Service (CGU)
+- Consumer médiateur
+- David Guetta streaming rights
 
-3. **Register for French commerce**
-   - Consumer mediator (required for e-commerce)
-   - Recommended: CNPM, Médicys, or similar
-   - Free for consumers, annual fee for business
+## Phase 2: Production Environment Setup
 
-### 1.2 Legal Pages - Fill Placeholders
-
-**Files to update**:
-- `app/terms/page.tsx` (CGU - Conditions Générales d'Utilisation)
-- `app/legal/page.tsx` (CGV - Conditions Générales de Vente)
-
-**Placeholders to replace**:
-
-#### CGU (app/terms/page.tsx)
-```typescript
-// Line 43-49: Company Information
-Capital social : [Montant] €              → Capital social : 1 €
-Siège social : [Adresse complète]        → Siège social : 123 Rue Example, 75001 Paris
-RCS : [Ville] [Numéro]                  → RCS : Paris B 123 456 789
-SIRET : [Numéro]                        → SIRET : 12345678901234
-TVA intracommunautaire : [Numéro]       → TVA intracommunautaire : FR12345678901
-Directeur de la publication : [Nom]      → Directeur de la publication : John Doe
-
-// Line 276: Contact Address
-Courrier : VyBzzZ SAS, [Adresse], France → Courrier : VyBzzZ SAS, 123 Rue Example, 75001 Paris, France
-```
-
-#### CGV (app/legal/page.tsx)
-```typescript
-// Similar placeholders in seller information section
-```
-
-**⚠️ WARNING**: Operating without proper legal pages exposes you to:
-- DGCCRF fines (up to €75,000 for legal entities)
-- Consumer lawsuits
-- Inability to process refund disputes
-- Payment processor account suspension
-
-### 1.3 Cookie Consent & RGPD Compliance
-
-**Status**: ✅ DONE
-
-- ✅ Cookie consent banner implemented
-- ✅ Privacy policy page created
-- ✅ User data export functionality
-- ✅ Account deletion functionality
-- ✅ 13-month consent expiration
-
-**Remaining**:
-- ⚠️ Appoint DPO (Data Protection Officer) if >250 employees
-- ⚠️ Register with CNIL if processing sensitive data
-- ⚠️ Update privacy policy with actual company details
-
-### 1.4 Legal Compliance Checklist
-
-- [ ] Company registered with RCS
-- [ ] SIRET/SIREN obtained
-- [ ] TVA intracommunautaire obtained
-- [ ] Consumer mediator contract signed
-- [ ] Legal placeholders filled in CGU/CGV
-- [ ] Privacy policy reviewed by legal counsel
-- [ ] Terms of Service reviewed by legal counsel
-- [ ] RGPD compliance documentation completed
-- [ ] Copyright notices for David Guetta content obtained
-
-## Phase 2: Technical Infrastructure
+**📖 See**: [PRODUCTION_CONFIG_GUIDE.md](PRODUCTION_CONFIG_GUIDE.md) for complete step-by-step guide
+**📖 See**: [PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md), Section 3
 
 ### 2.1 Environment Configuration
 
-**Production environment** (`.env.production`):
-
+**Verify environment variables**:
 ```bash
-# Verify all critical variables
 npm run check-env:prod
 ```
 
-**Required variables**:
-- [ ] `NEXT_PUBLIC_SUPABASE_URL` (production)
-- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` (production)
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` (production)
-- [ ] `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (production - starts with pk_live_)
-- [ ] `STRIPE_SECRET_KEY` (production - starts with sk_live_)
-- [ ] `STRIPE_WEBHOOK_SECRET` (production - starts with whsec_)
-- [ ] `STRIPE_PRICE_STARTER` (production price ID)
-- [ ] `STRIPE_PRICE_PRO` (production price ID)
-- [ ] `STRIPE_PRICE_ELITE` (production price ID)
-- [ ] `CRON_SECRET` (minimum 32 characters)
-- [ ] `NEXT_PUBLIC_SENTRY_DSN` (recommended)
-- [ ] `YOUTUBE_API_KEY` (for David Guetta live stream)
+**Critical variables** (32+ required):
+- Supabase: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+- Stripe: `STRIPE_SECRET_KEY` (starts with `sk_live_`), `STRIPE_WEBHOOK_SECRET`
+- Stripe Prices: `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_ELITE`
+- Security: `CRON_SECRET` (32+ characters, cryptographically random)
+- Monitoring: `NEXT_PUBLIC_SENTRY_DSN`
 
-### 2.2 Database Setup
+**Full list**: See `.env.example` (32+ variables)
 
-**Supabase Production**:
+### 2.2 Database Setup (Supabase)
 
-1. **Create production project**
-   ```
-   Project name: vybzzz-production
-   Region: Europe (Frankfurt) - closest to France
-   ```
+**📖 See**: [PRODUCTION_CONFIG_GUIDE.md](PRODUCTION_CONFIG_GUIDE.md), Section 3
 
-2. **Run migrations**
-   ```bash
-   npm run migrate
-   ```
+**Quick Checklist**:
+- [ ] Create production project (Region: Europe/Frankfurt)
+- [ ] Run all 8 migrations in order (see PRODUCTION_CONFIG_GUIDE.md)
+- [ ] Create storage buckets: `npm run setup:storage`
+- [ ] Enable Point-in-Time Recovery (PITR)
+- [ ] Verify RLS policies on all tables
+- [ ] Set up database monitoring alerts
 
-3. **Enable backups**
-   - Navigate to: Database → Backups
-   - Enable Point-in-Time Recovery (PITR)
-   - Retention: 7 days minimum
-   - Schedule: Daily at 3 AM UTC
-
-4. **Configure RLS policies**
-   - Verify all tables have RLS enabled
-   - Test with non-admin user account
-   - Ensure service role bypasses RLS
-
-5. **Set up monitoring**
-   - Enable database logging
-   - Set up alerting for:
-     - High connection count (>80%)
-     - Long-running queries (>5s)
-     - Disk usage (>80%)
+**Migration Order**:
+1. `schema-complete.sql`
+2. `add_performance_indexes.sql`
+3. `add_chat_enhancements.sql`
+4. `add_dashboard_optimization_functions.sql`
+5. `add_atomic_transaction_functions.sql`
+6. `add_rgpd_compliance_columns.sql`
+7. `add_webhook_events_table.sql`
+8. `add_secure_storage_configuration.sql`
 
 ### 2.3 Stripe Setup
 
-**Production Stripe Account**:
+**📖 See**: [PRODUCTION_CONFIG_GUIDE.md](PRODUCTION_CONFIG_GUIDE.md), Section 4
 
-1. **Complete business verification**
-   - Business details
-   - Bank account for payouts
-   - Identity verification
+**Quick Checklist**:
+- [ ] Switch to LIVE mode (complete business verification)
+- [ ] Create subscription products: `npm run setup:stripe`
+- [ ] Configure webhook endpoint: `https://vybzzz.com/api/stripe/webhook`
+- [ ] Enable Stripe Connect for artist payouts
+- [ ] Test webhook with: `stripe trigger payment_intent.succeeded`
 
-2. **Create subscription products**
-   ```bash
-   npm run setup:stripe
-   ```
+**Products to create**:
+- Starter: €19.99/month (14-day trial) → 50% artist share
+- Pro: €59.99/month (14-day trial) → 60% artist share
+- Elite: €129.99/month (14-day trial) → 70% artist share
 
-   Verify created:
-   - Starter: 19.99€/month (14-day trial)
-   - Pro: 59.99€/month (14-day trial)
-   - Elite: 129.99€/month (14-day trial)
+### 2.4 Frontend Deployment (Vercel)
 
-3. **Configure webhook endpoint**
-   - URL: `https://vybzzz.com/api/webhooks/stripe`
-   - Events:
-     - `payment_intent.succeeded`
-     - `payment_intent.payment_failed`
-     - `charge.refunded`
-     - `account.updated`
-     - `customer.subscription.*`
+**📖 See**: [PRODUCTION_CONFIG_GUIDE.md](PRODUCTION_CONFIG_GUIDE.md), Section 1
 
-4. **Test webhook delivery**
-   ```bash
-   stripe trigger payment_intent.succeeded
-   ```
+```bash
+# Test build locally
+npm run build
 
-5. **Set up Connected Accounts**
-   - Enable Express accounts for artists
-   - Configure automatic payouts (J+21)
-   - Set platform fees:
-     - Starter: 50%
-     - Pro: 40%
-     - Elite: 30%
+# Deploy to production
+vercel --prod
+```
 
-### 2.4 Deployment (Vercel)
+**Checklist**:
+- [ ] All environment variables configured in Vercel dashboard
+- [ ] Domain configured (vybzzz.com)
+- [ ] HTTPS/SSL enabled (automatic)
+- [ ] Cron job verified (daily at 2 AM UTC for payouts)
 
-1. **Link repository**
-   ```bash
-   vercel link
-   ```
+### 2.5 Backend Deployment (Railway)
 
-2. **Configure environment variables**
-   - Copy all production variables to Vercel dashboard
-   - Settings → Environment Variables
-   - Set for: Production
+**📖 See**: [PRODUCTION_CONFIG_GUIDE.md](PRODUCTION_CONFIG_GUIDE.md), Section 2
+**📖 See**: [RAILWAY_CRITICAL_FIX.md](RAILWAY_CRITICAL_FIX.md) for rootDirectory fix
 
-3. **Configure domains**
-   - Primary: `vybzzz.com`
-   - WWW redirect: `www.vybzzz.com` → `vybzzz.com`
-   - SSL: Automatic via Vercel
+**Checklist**:
+- [ ] Verify `railway.json` has `"rootDirectory": "backend"`
+- [ ] Environment variables configured
+- [ ] `CORS_ORIGIN` set to Vercel domain
+- [ ] Deploy: `git push origin main` (auto-deploys)
 
-4. **Deploy to production**
-   ```bash
-   npm run build  # Test build locally first
-   vercel --prod
-   ```
+### 2.6 Monitoring & Error Tracking
 
-5. **Verify cron job**
-   - Check `vercel.json` configuration
-   - Cron job runs daily at 2 AM UTC
-   - Path: `/api/cron/payouts`
-   - Protected with `CRON_SECRET`
+**📖 See**: [PRODUCTION_CONFIG_GUIDE.md](PRODUCTION_CONFIG_GUIDE.md), Section 6
 
-### 2.5 Monitoring & Error Tracking
+**Sentry** (error tracking):
+- [ ] Create Sentry project
+- [ ] Add `NEXT_PUBLIC_SENTRY_DSN` to environment
+- [ ] Set up alert thresholds (error rate >1%, response time >2s)
 
-**Sentry Setup**:
-
-1. **Create Sentry project**
-   - Platform: Next.js
-   - Organization: VyBzzZ
-
-2. **Configure environment variables**
-   ```env
-   NEXT_PUBLIC_SENTRY_DSN=https://...@sentry.io/...
-   SENTRY_ORG=vybzzz
-   SENTRY_PROJECT=vybzzz-platform
-   SENTRY_AUTH_TOKEN=...
-   ```
-
-3. **Test error tracking**
-   - Trigger test error
-   - Verify in Sentry dashboard
-   - Set up alerting rules
-
-**Health Monitoring**:
-
-1. **Set up uptime monitoring**
-   - Service: Uptime Robot, Pingdom, or similar
-   - Endpoint: `https://vybzzz.com/api/health`
-   - Frequency: Every 5 minutes
-   - Alert if down for >2 minutes
-
-2. **Configure health check alerts**
-   - Email: tech@vybzzz.com
-   - SMS: Critical alerts only
-   - Slack: #alerts channel
+**Uptime Monitoring**:
+- [ ] Configure uptime monitor (Uptime Robot, Pingdom)
+- [ ] Monitor: `https://vybzzz.com/api/health`
+- [ ] Frequency: Every 5 minutes
 
 ## Phase 3: Testing
 
-### 3.1 Integration Tests
+**📖 See**: [TESTING.md](TESTING.md) for detailed test guide
+**📖 See**: [PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md), Section 4
 
-**Run all test suites**:
+### 3.1 Integration Tests (50 tests)
+
 ```bash
 npm test
 ```
 
-**Expected results**:
-- ✅ Ticket Purchase Flow: 12/12 passed
-- ✅ Tip Payment Flow: 13/13 passed
-- ✅ Webhook Processing: 13/13 passed
-- ✅ Artist Payout Calculation: 12/12 passed
-
-**See**: `TESTING.md` for detailed guide
+**Expected**:
+- ✅ 12/12 Ticket Purchase tests
+- ✅ 13/13 Tip Payment tests
+- ✅ 13/13 Webhook Processing tests
+- ✅ 12/12 Artist Payout tests
 
 ### 3.2 Manual E2E Testing
 
-**Critical user flows** (test in production environment):
+**Test in production with real data**:
 
-1. **Fan Journey**
-   - [ ] Sign up with email
-   - [ ] Browse events
-   - [ ] Purchase ticket (use real payment)
-   - [ ] Access live stream
-   - [ ] Send tip to artist
-   - [ ] View purchase history
-   - [ ] Request data export
-   - [ ] Delete account
-
-2. **Artist Journey**
-   - [ ] Sign up as artist
-   - [ ] Complete Stripe Connect onboarding
-   - [ ] Subscribe to Starter plan (14-day trial)
-   - [ ] Create event
-   - [ ] Update event details
-   - [ ] View dashboard analytics
-   - [ ] Check payout schedule
-   - [ ] Upgrade to Pro plan
-
-3. **Affiliate Journey**
-   - [ ] Register as AA
-   - [ ] Pay 2,997€ investment
-   - [ ] Receive referral code
-   - [ ] Share referral code
-   - [ ] Track commissions
-   - [ ] View dashboard
+1. **Fan Flow**: Sign up → Buy ticket (€1 test) → Watch stream → Send tip → Export data
+2. **Artist Flow**: Sign up → Stripe Connect → Subscribe → Create event → View analytics
+3. **Affiliate Flow**: Register AA → Get referral code → Track commissions
 
 ### 3.3 Performance Testing
 
-**Load testing** (before David Guetta concert):
+**Before launch, test**:
+- 10,000 concurrent viewers (2 hours)
+- 1,000 ticket purchases in 5 minutes
+- Response time <500ms (p95)
+- Error rate <0.1%
 
-1. **Simulate concurrent users**
-   - Tool: k6, Artillery, or JMeter
-   - Test: 10,000 concurrent viewers
-   - Duration: 2 hours
-   - Metrics:
-     - Response time <500ms (p95)
-     - Error rate <0.1%
-     - Database connections <80%
-
-2. **Stress test ticket purchase**
-   - Simulate: 1,000 purchases in 5 minutes
-   - Verify: No race conditions
-   - Check: Payment processing queue
-
-3. **Test live stream capacity**
-   - Platform: YouTube Live
-   - Capacity: 100,000+ concurrent viewers
-   - Fallback: AWS IVS (if YouTube fails)
+**Tools**: k6.io, Artillery, or Apache JMeter
 
 ## Phase 4: Content & Marketing
 
+**📖 See**: [PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md), Sections 2 & 7
+
 ### 4.1 David Guetta Event Setup
 
-- [ ] Create event in database
-- [ ] Title: "David Guetta - New Year's Eve 2025"
-- [ ] Date: December 31, 2025, 23:00 CET
-- [ ] Ticket price: 25€ (Elite tier pricing)
-- [ ] Max attendees: 100,000
-- [ ] YouTube Live stream URL configured
-- [ ] Event description and images uploaded
-- [ ] Copyright clearance obtained
-- [ ] SACEM/SACD declarations filed
+- [ ] Obtain streaming rights (CRITICAL - see checklist)
+- [ ] Music licensing (SACEM/ASCAP)
+- [ ] Create event in platform
+- [ ] Configure YouTube Live URL
+- [ ] Upload event banner and description
+- [ ] Set ticket price (suggest €25, Happy Hour €4.99)
+- [ ] Test stream embedding
 
-### 4.2 Marketing Materials
+### 4.2 Marketing & Communication
 
-- [ ] Landing page for David Guetta event
-- [ ] Social media graphics (Instagram, TikTok, Facebook)
-- [ ] Email campaign templates
-- [ ] Press release
-- [ ] Influencer partnership agreements
-- [ ] AA/RR promotional materials
+- [ ] Email system configured (Resend)
+- [ ] Test all email templates (welcome, ticket confirmation, etc.)
+- [ ] Social media accounts created
+- [ ] Customer support channels ready (support@vybzzz.com)
+- [ ] FAQ page created
 
 ## Phase 5: Security
 
-### 5.1 Security Audit
+**📖 See**: [PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md), Section 4.1
 
-**Pre-launch security checklist**:
+### Security Checklist
 
-- [ ] All API routes protected with authentication
-- [ ] Rate limiting enabled on all endpoints
-- [ ] CORS configured correctly
+- [ ] All API routes authenticated
+- [ ] Rate limiting enabled (Upstash Redis)
+- [ ] CORS configured (see `/middleware.ts`)
 - [ ] Stripe webhook signature verification
 - [ ] Supabase RLS policies tested
-- [ ] SQL injection protection verified
-- [ ] XSS protection enabled
-- [ ] CSRF tokens on form submissions
-- [ ] HTTPS enforced on all pages
-- [ ] Security headers configured
+- [ ] SQL injection protection (using Supabase client)
+- [ ] XSS prevention (React escaping)
+- [ ] HTTPS enforced
+- [ ] Security headers enabled (X-Frame-Options, CSP, etc.)
+- [ ] Test with https://securityheaders.com
 
-**Recommended headers** (in `next.config.js`):
-```javascript
-headers: [
-  {
-    key: 'X-Frame-Options',
-    value: 'DENY'
-  },
-  {
-    key: 'X-Content-Type-Options',
-    value: 'nosniff'
-  },
-  {
-    key: 'Referrer-Policy',
-    value: 'strict-origin-when-cross-origin'
-  }
-]
-```
-
-### 5.2 Penetration Testing
-
-**Optional but recommended**:
-- Hire security firm for penetration testing
-- Focus on payment flows and user data
-- Budget: €2,000-€5,000
-- Timeline: 1-2 weeks before launch
+**Security headers**: Already configured in `/middleware.ts`
 
 ## Phase 6: Launch Readiness
 
-### 6.1 Final Checklist (24h before launch)
+**📖 See**: [PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md), Section 8
 
-- [ ] All legal placeholders filled
+### 6.1 Final Pre-Launch Checks (December 30, 2025)
+
+- [ ] All 50 integration tests passing
+- [ ] Legal pages complete (company info filled)
 - [ ] Production environment verified
-- [ ] Database backups enabled
-- [ ] Monitoring and alerting active
-- [ ] All integration tests passing
-- [ ] Manual E2E tests completed
-- [ ] Performance tests passed
+- [ ] €1 test ticket purchase successful
 - [ ] David Guetta event created
-- [ ] Customer support ready
-- [ ] Emergency rollback plan documented
+- [ ] Monitoring alerts configured
+- [ ] Team on standby
 
-### 6.2 Launch Day Plan
+### 6.2 Launch Day Operations (December 31, 2025)
 
 **Timeline**:
-- **T-24h**: Final smoke tests
-- **T-12h**: Team on standby
-- **T-6h**: Disable maintenance mode
-- **T-2h**: Monitor dashboards
+- **T-12h**: Final smoke tests, team on standby
+- **T-2h**: Monitor dashboards (Sentry, Vercel, Railway, Stripe)
 - **T-0**: David Guetta concert begins
-- **T+2h**: Post-launch review
+- **T+2h**: Post-event review
 
 **On-call team**:
 - Backend engineer
 - Frontend engineer
-- DevOps engineer
-- Customer support
+- DevOps/support
+
+**Monitor every 30 minutes**:
+- Server uptime
+- Error rate (<1%)
+- Payment success rate (>95%)
+- Video stream quality
 
 ### 6.3 Emergency Procedures
 
-**Rollback plan**:
+**Rollback**:
 ```bash
-# Revert to previous deployment
-vercel rollback
-
-# Or deploy specific version
-vercel deploy --prod <deployment-url>
+vercel rollback  # Frontend
+# Railway: Deploy previous commit
 ```
 
-**Database rollback**:
-- Use Supabase PITR to restore to last known good state
-- Maximum data loss: 5 minutes (with PITR enabled)
+**Database**: Use Supabase PITR (Point-in-Time Recovery)
 
-**Payment issues**:
-- Stripe dashboard: Pause all subscriptions
-- Disable ticket purchases temporarily
-- Display maintenance message
+**Incident Response**:
+- Errors spike → Check Sentry → Hotfix
+- Payments fail → Check Stripe status → Contact support
+- Stream fails → Switch to AWS IVS backup
 
 ## Phase 7: Post-Launch
 
-### 7.1 Monitoring (First 48 hours)
+**📖 See**: [PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md), Section 9
 
-**Watch for**:
-- Payment failures (should be <1%)
-- API errors (should be <0.5%)
-- Database performance
-- Live stream quality
-- Customer support tickets
+### 7.1 First 24 Hours (January 1-2, 2026)
 
-**Metrics dashboard**:
-- Revenue (real-time)
-- Active users
-- Ticket sales
-- Concurrent viewers
-- Average tip amount
+**Monitor**:
+- Total revenue and ticket sales
+- Peak concurrent viewers
+- Error rate and payment failures
+- User feedback and support tickets
 
-### 7.2 Customer Support
+**Actions**:
+- Send thank you emails
+- Gather user feedback
+- Fix critical bugs
+- Post-event analysis
 
-**Support channels**:
-- Email: support@vybzzz.com
-- Chat: In-app messaging
-- Phone: +33 X XX XX XX XX
+### 7.2 First Payout (J+21: January 21, 2026)
 
-**Common issues**:
-- Payment failed → Check card/bank
-- Stream not loading → Check internet connection
-- Ticket not received → Check email spam folder
-- Refund request → CGV Article 7 (no refunds)
-
-### 7.3 First Payout (J+21)
-
-**January 21, 2026** (21 days after David Guetta concert):
-
-- [ ] Verify cron job executed successfully
-- [ ] Check all artist payouts created
-- [ ] Verify Stripe transfers initiated
-- [ ] Monitor for payout failures
+**Automated cron job** runs at 2 AM UTC:
+- [ ] Verify payouts created in Stripe
+- [ ] Check artists receive funds
+- [ ] Verify AA/RR commissions paid
 - [ ] Send payout confirmation emails
 
-## Resources
-
-- [TESTING.md](TESTING.md) - Integration test guide
-- [README.md](README.md) - Setup and architecture
-- [Stripe Documentation](https://stripe.com/docs)
-- [Supabase Documentation](https://supabase.com/docs)
-- [Vercel Documentation](https://vercel.com/docs)
-- [CNIL RGPD Guide](https://www.cnil.fr/fr/reglement-europeen-protection-donnees)
-
-## Support Contacts
-
-- **Technical**: dev@vybzzz.com
-- **Legal**: legal@vybzzz.com
-- **Finance**: finance@vybzzz.com
-- **Emergency**: +33 X XX XX XX XX
+**Monitoring**: `/api/cron/payouts` endpoint logs
 
 ---
 
-**Last updated**: 2025-10-29
-**Next review**: Before David Guetta concert (Dec 31, 2025)
+## 📚 Documentation Resources
 
-🤖 Deployment checklist created with Claude Code
+**Start Here**:
+- **[PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md)** - Master checklist for launch (recommended)
+- **[TODO_ANALYSIS.md](TODO_ANALYSIS.md)** - Detailed analysis of all remaining work
+- **[IMMEDIATE_ACTIONS.md](IMMEDIATE_ACTIONS.md)** - Quick action plan
+
+**Configuration Guides**:
+- **[PRODUCTION_CONFIG_GUIDE.md](PRODUCTION_CONFIG_GUIDE.md)** - Complete production setup (Vercel, Railway, Supabase, Stripe)
+- **[LEGAL_TEMPLATE.md](LEGAL_TEMPLATE.md)** - How to fill legal placeholders
+- **[RAILWAY_CRITICAL_FIX.md](RAILWAY_CRITICAL_FIX.md)** - Railway rootDirectory fix
+
+**Development**:
+- **[CLAUDE.md](CLAUDE.md)** - Complete codebase guide for AI assistants
+- **[TESTING.md](TESTING.md)** - Integration test suite (50 tests)
+- **[README.md](README.md)** - Setup and architecture overview
+
+**External Documentation**:
+- [Stripe Docs](https://stripe.com/docs) - Payments & Connect
+- [Supabase Docs](https://supabase.com/docs) - Database & Auth
+- [Vercel Docs](https://vercel.com/docs) - Deployment
+- [Railway Docs](https://docs.railway.app) - Backend deployment
+- [CNIL RGPD Guide](https://www.cnil.fr/fr/reglement-europeen-protection-donnees) - GDPR compliance
+
+---
+
+## 🆘 Support Contacts
+
+**VyBzzZ Internal**:
+- Technical Support: [TO BE FILLED]
+- Legal Counsel: [TO BE FILLED]
+- Finance/Accounting: [TO BE FILLED]
+
+**External Services**:
+- **Supabase**: support@supabase.com
+- **Stripe**: https://support.stripe.com
+- **Vercel**: https://vercel.com/support
+- **Railway**: https://railway.app/help
+
+**Legal**:
+- **Infogreffe** (company registration): https://www.infogreffe.fr
+- **CNIL** (GDPR): https://www.cnil.fr
+
+---
+
+## Timeline Summary
+
+**46 days remaining until launch (December 31, 2025)**
+
+- **Week 1-2 (Nov 16-29)**: Company registration, David Guetta rights negotiation
+- **Week 3 (Nov 30-Dec 6)**: Fill legal placeholders, médiateur contract
+- **Week 4 (Dec 7-13)**: Production environment setup, database migrations
+- **Week 5 (Dec 14-20)**: Testing, mobile app development, marketing
+- **Week 6 (Dec 21-27)**: Final testing, security audit
+- **Week 7 (Dec 28-31)**: Final checks, team on standby, **LAUNCH**
+
+**See**: [PRE_LAUNCH_CHECKLIST.md](PRE_LAUNCH_CHECKLIST.md) for detailed week-by-week planning
+
+---
+
+**Last Updated**: November 15, 2025
+**Next Review**: Weekly until launch
+**Days to Launch**: 46
+
+🚀 Good luck with the launch!

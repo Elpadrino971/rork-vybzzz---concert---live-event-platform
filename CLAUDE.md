@@ -946,6 +946,354 @@ logger.info('Operation completed', {
 
 ---
 
+## Supabase Storage - Secure File Management
+
+### Storage Buckets
+
+VyBzzZ uses **6 Supabase Storage buckets** for different types of media:
+
+```typescript
+STORAGE_BUCKETS = {
+  event-images: {
+    maxSize: '5MB',
+    types: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+    visibility: 'public',
+    use: 'Event banners and promotional images'
+  },
+  event-videos: {
+    maxSize: '500MB',
+    types: ['video/mp4', 'video/webm', 'video/quicktime'],
+    visibility: 'public',
+    use: 'Event promotional videos'
+  },
+  user-avatars: {
+    maxSize: '2MB',
+    types: ['image/jpeg', 'image/png', 'image/webp'],
+    visibility: 'public',
+    use: 'User profile pictures (fans, artists, AA, RR)'
+  },
+  event-thumbnails: {
+    maxSize: '1MB',
+    types: ['image/jpeg', 'image/png', 'image/webp'],
+    visibility: 'public',
+    use: 'Event thumbnail images'
+  },
+  artist-banners: {
+    maxSize: '3MB',
+    types: ['image/jpeg', 'image/png', 'image/webp'],
+    visibility: 'public',
+    use: 'Artist profile banner images'
+  },
+  shorts-videos: {
+    maxSize: '100MB',
+    types: ['video/mp4', 'video/webm', 'video/quicktime'],
+    visibility: 'public',
+    use: 'TikTok-style short videos and AI-generated highlights'
+  }
+}
+```
+
+### Setup Storage
+
+**Automated Setup** (Recommended):
+```bash
+npm run setup:storage
+```
+
+This script will:
+1. Create all 6 storage buckets with proper configuration
+2. Set file size limits and allowed MIME types
+3. Provide instructions for applying RLS policies
+
+**Manual Setup**:
+1. Run the SQL migration in Supabase SQL Editor:
+   ```bash
+   supabase/migrations/add_secure_storage_configuration.sql
+   ```
+2. This creates buckets + RLS policies + helper functions + audit logging
+
+### Storage Security (RLS Policies)
+
+**Public Access**: All buckets are **publicly readable** (for serving images/videos)
+
+**Write Access**:
+- **event-images, event-videos, event-thumbnails, artist-banners, shorts-videos**:
+  - Any authenticated user can upload
+  - Only authenticated users can update/delete
+
+- **user-avatars**:
+  - Users can only upload/update/delete their OWN avatar
+  - Path must start with their user ID: `users/{userId}/avatar.jpg`
+
+**Example RLS Policy** (user-avatars):
+```sql
+CREATE POLICY "Users can upload own avatar"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'user-avatars'
+  AND auth.role() = 'authenticated'
+  AND (storage.foldername(name))[1] = auth.uid()::text
+);
+```
+
+### Upload Files (Backend API)
+
+**File**: `/backend/src/services/storage.service.ts`
+
+**Available Methods**:
+```typescript
+// Event image
+await storageService.uploadEventImage(file, eventId)
+
+// Event video
+await storageService.uploadEventVideo(file, eventId)
+
+// User avatar
+await storageService.uploadUserAvatar(file, userId)
+
+// Event thumbnail
+await storageService.uploadEventThumbnail(file, eventId)
+
+// Artist banner
+await storageService.uploadArtistBanner(file, artistId)
+
+// Short video (TikTok-style)
+await storageService.uploadShortVideo(file, userId, eventId?)
+
+// Generic upload with validation
+await storageService.uploadFile(bucket, file, folder, options)
+
+// Delete file
+await storageService.deleteFile(bucket, filePath)
+
+// Delete entire folder
+await storageService.deleteFolder(bucket, folderPath)
+
+// List files
+await storageService.listFiles(bucket, folder)
+
+// Get signed URL (for private files)
+await storageService.getSignedUrl(bucket, filePath, expiresIn)
+
+// Cleanup temp files (>24h old)
+await storageService.cleanupTemporaryFiles(bucket)
+```
+
+### Upload Endpoints (Express Backend)
+
+**Base URL**: `http://localhost:3001/api/storage` (dev) or your Railway URL (prod)
+
+```bash
+# Upload event image
+POST /api/storage/upload/event-image
+Body: multipart/form-data
+  - file: [image file]
+  - eventId: (optional)
+
+# Upload event video
+POST /api/storage/upload/event-video
+Body: multipart/form-data
+  - file: [video file]
+  - eventId: (optional)
+
+# Upload user avatar
+POST /api/storage/upload/avatar
+Body: multipart/form-data
+  - file: [image file]
+  - userId: (required)
+
+# Upload event thumbnail
+POST /api/storage/upload/thumbnail
+Body: multipart/form-data
+  - file: [image file]
+  - eventId: (optional)
+
+# Upload artist banner
+POST /api/storage/upload/artist-banner
+Body: multipart/form-data
+  - file: [image file]
+  - artistId: (required)
+
+# Upload short video
+POST /api/storage/upload/short-video
+Body: multipart/form-data
+  - file: [video file]
+  - userId: (required)
+  - eventId: (optional)
+
+# Delete file
+DELETE /api/storage/delete/:bucket/:path
+
+# Delete folder
+DELETE /api/storage/folder/:bucket/:path
+
+# List files in bucket
+GET /api/storage/list/:bucket?folder=path
+
+# Get public URL
+GET /api/storage/url/:bucket/:path
+
+# Cleanup temp files
+POST /api/storage/cleanup/temp/:bucket
+```
+
+### File Validation
+
+**Automatic validation** in `storageService.validateFile()`:
+- ✅ File size within bucket limit
+- ✅ MIME type allowed for bucket
+- ✅ File not empty
+- ✅ Valid file extension
+- ✅ Extension matches MIME type
+
+**Example**:
+```typescript
+// This will throw an error if validation fails
+await storageService.uploadEventImage(file, eventId)
+// Error: "Le fichier dépasse la limite de 5MB pour ce bucket"
+```
+
+### Storage Best Practices
+
+**Security**:
+1. **Always validate server-side** - Never trust client validation
+2. **Use service role key** - Backend uses `SUPABASE_SERVICE_ROLE_KEY` to bypass RLS
+3. **Never expose service key** - Keep it server-side only
+4. **Sanitize filenames** - Use timestamp + random string
+5. **Check file types** - Validate MIME type AND extension
+
+**Performance**:
+1. **Use CDN** - Supabase Storage uses CDN by default
+2. **Set cache headers** - Files cached for 1 hour (`cacheControl: '3600'`)
+3. **Optimize images** - Compress before upload (use `image/webp` when possible)
+4. **Use thumbnails** - Don't serve full-size images for previews
+
+**Organization**:
+1. **Folder structure**:
+   ```
+   event-images/
+     └── events/{eventId}/
+          └── {timestamp}-{random}.jpg
+
+   user-avatars/
+     └── users/{userId}/
+          └── {timestamp}-{random}.jpg
+
+   shorts-videos/
+     └── events/{eventId}/shorts/
+          └── {timestamp}-{random}.mp4
+   ```
+
+2. **Cleanup temp files**:
+   ```bash
+   # Run daily via cron
+   POST /api/storage/cleanup/temp/event-images
+   ```
+
+### Storage Monitoring
+
+**Audit Logging** (created by migration):
+```sql
+SELECT * FROM storage_audit_log
+WHERE user_id = 'user-uuid'
+ORDER BY created_at DESC;
+```
+
+**Usage Statistics**:
+```sql
+-- Per user
+SELECT * FROM storage_usage_by_user
+WHERE user_id = 'user-uuid';
+
+-- Per bucket
+SELECT * FROM storage_usage_by_bucket
+ORDER BY total_size_gb DESC;
+```
+
+**Check via API**:
+```bash
+npm run setup:storage
+# Shows bucket stats at the end
+```
+
+### Common Storage Tasks
+
+**Upload from React/Next.js**:
+```typescript
+async function uploadEventImage(file: File, eventId: string) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('eventId', eventId);
+
+  const response = await fetch('/api/storage/upload/event-image', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await response.json();
+  return data.data.publicUrl; // https://...supabase.co/storage/v1/object/public/event-images/...
+}
+```
+
+**Upload from React Native**:
+```typescript
+import * as ImagePicker from 'expo-image-picker';
+
+async function uploadAvatar(userId: string) {
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    quality: 0.8,
+  });
+
+  if (!result.canceled) {
+    const formData = new FormData();
+    formData.append('file', {
+      uri: result.assets[0].uri,
+      type: 'image/jpeg',
+      name: 'avatar.jpg',
+    } as any);
+    formData.append('userId', userId);
+
+    const response = await fetch('https://your-backend.railway.app/api/storage/upload/avatar', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await response.json();
+    return data.data.publicUrl;
+  }
+}
+```
+
+**Delete user's all files** (on account deletion):
+```typescript
+await storageService.deleteFolder('user-avatars', `users/${userId}`);
+await storageService.deleteFolder('shorts-videos', `users/${userId}/shorts`);
+```
+
+### Troubleshooting
+
+**Error: "Bucket not found"**
+- Run `npm run setup:storage` to create buckets
+- Check bucket name spelling (case-sensitive)
+
+**Error: "New row violates row-level security policy"**
+- Check that RLS policies are applied (run migration SQL)
+- Or use `SUPABASE_SERVICE_ROLE_KEY` in backend to bypass RLS
+
+**Error: "File size exceeds limit"**
+- Check `BUCKET_SIZE_LIMITS` in `/backend/src/services/storage.service.ts`
+- Compress file before upload
+- Increase bucket limit if needed (in Supabase dashboard)
+
+**Error: "Invalid MIME type"**
+- Check `BUCKET_ALLOWED_MIMETYPES` for allowed types
+- Ensure file extension matches MIME type
+- Convert file to supported format
+
+---
+
 ## Security & Compliance
 
 ### Authentication

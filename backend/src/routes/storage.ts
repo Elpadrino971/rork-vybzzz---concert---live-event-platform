@@ -256,5 +256,126 @@ router.get('/url/:bucket/:path(*)', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/storage/upload/artist-banner
+ * Upload une bannière d'artiste
+ */
+router.post('/upload/artist-banner', upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Aucun fichier fourni' });
+    }
+
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ error: 'Le fichier doit être une image' });
+    }
+
+    const artistId = req.body.artistId as string;
+    if (!artistId) {
+      return res.status(400).json({ error: 'artistId est requis' });
+    }
+
+    const result = await storageService.uploadArtistBanner(req.file, artistId);
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    console.error('Erreur upload bannière artiste:', error);
+    res.status(500).json({
+      error: error.message || 'Erreur lors de l\'upload de la bannière',
+    });
+  }
+});
+
+/**
+ * POST /api/storage/upload/short-video
+ * Upload une vidéo short (TikTok-style)
+ */
+router.post('/upload/short-video', upload.single('file'), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'Aucun fichier fourni' });
+    }
+
+    if (!req.file.mimetype.startsWith('video/')) {
+      return res.status(400).json({ error: 'Le fichier doit être une vidéo' });
+    }
+
+    const userId = req.body.userId as string;
+    if (!userId) {
+      return res.status(400).json({ error: 'userId est requis' });
+    }
+
+    const eventId = req.body.eventId as string | undefined;
+    const result = await storageService.uploadShortVideo(req.file, userId, eventId);
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error: any) {
+    console.error('Erreur upload vidéo short:', error);
+    res.status(500).json({
+      error: error.message || 'Erreur lors de l\'upload de la vidéo short',
+    });
+  }
+});
+
+/**
+ * DELETE /api/storage/folder/:bucket/:path
+ * Supprime un dossier complet
+ */
+router.delete('/folder/:bucket/:path(*)', async (req: Request, res: Response) => {
+  try {
+    const bucket = req.params.bucket as StorageBucket;
+    const folderPath = req.params.path;
+
+    if (!Object.values(StorageBucket).includes(bucket)) {
+      return res.status(400).json({ error: 'Bucket invalide' });
+    }
+
+    await storageService.deleteFolder(bucket, folderPath);
+
+    res.json({
+      success: true,
+      message: 'Dossier supprimé avec succès',
+    });
+  } catch (error: any) {
+    console.error('Erreur suppression dossier:', error);
+    res.status(500).json({
+      error: error.message || 'Erreur lors de la suppression du dossier',
+    });
+  }
+});
+
+/**
+ * POST /api/storage/cleanup/temp/:bucket
+ * Nettoie les fichiers temporaires (> 24h)
+ */
+router.post('/cleanup/temp/:bucket', async (req: Request, res: Response) => {
+  try {
+    const bucket = req.params.bucket as StorageBucket;
+
+    if (!Object.values(StorageBucket).includes(bucket)) {
+      return res.status(400).json({ error: 'Bucket invalide' });
+    }
+
+    const deletedCount = await storageService.cleanupTemporaryFiles(bucket);
+
+    res.json({
+      success: true,
+      message: `${deletedCount} fichier(s) temporaire(s) supprimé(s)`,
+      deletedCount,
+    });
+  } catch (error: any) {
+    console.error('Erreur nettoyage fichiers temporaires:', error);
+    res.status(500).json({
+      error: error.message || 'Erreur lors du nettoyage',
+    });
+  }
+});
+
 export default router;
 

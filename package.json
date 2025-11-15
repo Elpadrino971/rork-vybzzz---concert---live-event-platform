@@ -12,6 +12,7 @@
     "check-env:prod": "tsx scripts/check-env.ts .env.production",
     "migrate": "./scripts/run-migrations.sh",
     "setup:stripe": "tsx scripts/setup-stripe.ts",
+    "setup:storage": "tsx scripts/setup-storage.ts",
     "supabase:generate-types": "supabase gen types typescript --project-id YOUR_PROJECT_ID > types/supabase.ts",
     "test": "npm run test:ticket-purchase && npm run test:tip-payment && npm run test:webhooks && npm run test:payouts",
     "test:ticket-purchase": "tsx scripts/test-ticket-purchase.ts",

@@ -1,0 +1,32 @@
+# VyBzzZ - Vercel Ignore Configuration
+# Exclude mobile app (deployed separately via EAS)
+
+mobile/
+backend/node_modules/
+*.md
+!README.md
+
+# Test files
+scripts/test-*.ts
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Documentation
+docs/
+DEPLOY_NOW.md
+DEPLOYMENT_GUIDE.md
+HOSTINGER_DNS_SETUP.md
+STREAMING_ARCHITECTURE.md
+BRAND_GUIDELINES.md
+IMPLEMENTATION_SUMMARY.md
+SUPABASE_SETUP.md
+TESTING.md
+LEGAL_TEMPLATE.md
+
+# Development files
+.env.example
+.env.local
+.env.development
+tsconfig.tsbuildinfo

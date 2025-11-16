@@ -8,6 +8,9 @@
 -- Date: 2025-11-16
 -- ================================================================
 
+-- Ensure uuid-ossp extension for tests
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- ================================================================
 -- Test 1: Vérifier le nombre de colonnes
 -- ================================================================
@@ -204,14 +207,17 @@ BEGIN
   RAISE NOTICE '====================================';
   RAISE NOTICE 'Test 5: Trigger sync_display_name';
 
-  -- Insert test record
-  INSERT INTO profiles (email, full_name, user_type)
+  -- Insert test record (with explicit UUID to avoid id constraint issues)
+  test_id := uuid_generate_v4();
+
+  INSERT INTO profiles (id, email, full_name, user_type)
   VALUES (
+    test_id,
     'test_' || floor(random() * 1000000)::text || '@test.com',
     test_full_name,
     'fan'
   )
-  RETURNING id, display_name INTO test_id, result_display_name;
+  RETURNING display_name INTO result_display_name;
 
   RAISE NOTICE 'Test: Insertion avec full_name = "%"', test_full_name;
   RAISE NOTICE 'Résultat: display_name = "%"', result_display_name;
@@ -241,14 +247,17 @@ BEGIN
   RAISE NOTICE '====================================';
   RAISE NOTICE 'Test 6: Trigger updated_at';
 
-  -- Insert test record
-  INSERT INTO profiles (email, full_name, user_type)
+  -- Insert test record (with explicit UUID to avoid id constraint issues)
+  test_id := uuid_generate_v4();
+
+  INSERT INTO profiles (id, email, full_name, user_type)
   VALUES (
+    test_id,
     'test_update_' || floor(random() * 1000000)::text || '@test.com',
     'Test Update User',
     'fan'
   )
-  RETURNING id, created_at INTO test_id, created_time;
+  RETURNING created_at INTO created_time;
 
   RAISE NOTICE 'Test: Création à %', created_time;
 

@@ -12,6 +12,7 @@ import { WebView } from 'react-native-webview';
 import { useAuth } from '@/hooks/useAuth';
 import { events as eventsApi, tickets as ticketsApi } from '@/lib/supabase';
 import Loading from '@/components/Loading';
+import LiveChat from '@/components/LiveChat';
 
 const { width, height } = Dimensions.get('window');
 
@@ -150,12 +151,8 @@ export default function LiveStreamScreen() {
           </Text>
         </View>
 
-        {/* Future: Add chat here */}
-        <View style={styles.chatPlaceholder}>
-          <Text style={styles.chatPlaceholderText}>
-            💬 Le chat sera disponible prochainement
-          </Text>
-        </View>
+        {/* Live Chat */}
+        <LiveChat eventId={id!} />
       </View>
     </>
   );
@@ -209,17 +206,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-  },
-  chatPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  chatPlaceholderText: {
-    fontSize: 14,
-    color: '#A0AEC0',
-    textAlign: 'center',
   },
   errorContainer: {
     flex: 1,

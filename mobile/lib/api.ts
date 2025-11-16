@@ -286,6 +286,63 @@ class ApiService {
   }
 
   // ============================================================
+  // STORAGE OPERATIONS
+  // ============================================================
+
+  /**
+   * Upload user avatar
+   */
+  async uploadAvatar(uri: string, userId: string): Promise<{
+    publicUrl: string | null;
+    error: Error | null;
+  }> {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const formData = new FormData();
+
+      // Extract filename from URI
+      const filename = uri.split('/').pop() || 'avatar.jpg';
+
+      // Create file object for FormData
+      formData.append('file', {
+        uri,
+        type: 'image/jpeg',
+        name: filename,
+      } as any);
+
+      formData.append('userId', userId);
+
+      const response = await fetch(`${this.baseUrl}/api/storage/upload/avatar`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          // Don't set Content-Type, let browser set it with boundary
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erreur lors de l\'upload');
+      }
+
+      const result = await response.json();
+
+      return {
+        publicUrl: result.data?.publicUrl || null,
+        error: null,
+      };
+    } catch (error) {
+      console.error('Avatar upload error:', error);
+      return {
+        publicUrl: null,
+        error: error as Error,
+      };
+    }
+  }
+
+  // ============================================================
   // HEALTH CHECK
   // ============================================================
 

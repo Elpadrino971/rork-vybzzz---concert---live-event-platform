@@ -18,6 +18,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Button from '@/components/Button';
 import Loading from '@/components/Loading';
+import TipModal from '@/components/TipModal';
 
 const { width } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function EventDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [hasTicket, setHasTicket] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
   const { user } = useAuth();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const router = useRouter();
@@ -270,7 +272,26 @@ export default function EventDetailScreen() {
             </>
           )}
         </View>
+
+        {/* Tip Button */}
+        {!isPast && event.artist_id && (
+          <TouchableOpacity
+            style={styles.tipButton}
+            onPress={() => setShowTipModal(true)}
+          >
+            <Text style={styles.tipButtonIcon}>💝</Text>
+            <Text style={styles.tipButtonText}>Envoyer un pourboire à {event.artist_name}</Text>
+          </TouchableOpacity>
+        )}
       </View>
+
+      {/* Tip Modal */}
+      <TipModal
+        visible={showTipModal}
+        onClose={() => setShowTipModal(false)}
+        artistId={event?.artist_id || ''}
+        artistName={event?.artist_name || 'l\'artiste'}
+      />
     </ScrollView>
   );
 }
@@ -440,5 +461,25 @@ const styles = StyleSheet.create({
   },
   viewTicketButton: {
     marginTop: 8,
+  },
+  tipButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF5F5',
+    borderWidth: 2,
+    borderColor: '#FF6B35',
+    borderRadius: 12,
+    paddingVertical: 16,
+    marginTop: 16,
+  },
+  tipButtonIcon: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  tipButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FF6B35',
   },
 });

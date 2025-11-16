@@ -7,10 +7,13 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/hooks/useAuth';
 import { profiles } from '@/lib/supabase';
+import { api } from '@/lib/api';
 import Input from '@/components/Input';
 import Button from '@/components/Button';
 import Loading from '@/components/Loading';
@@ -19,6 +22,7 @@ export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [bio, setBio] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -72,6 +76,64 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleChangeAvatar = async () => {
+    if (!user) return;
+
+    try {
+      // Request permission
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permissionResult.granted) {
+        Alert.alert(
+          'Permission requise',
+          'Veuillez autoriser l\'accès à vos photos pour changer votre avatar'
+        );
+        return;
+      }
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (result.canceled) return;
+
+      setUploadingAvatar(true);
+
+      // Upload to backend
+      const { publicUrl, error } = await api.uploadAvatar(
+        result.assets[0].uri,
+        user.id
+      );
+
+      if (error || !publicUrl) {
+        throw new Error(error?.message || 'Erreur lors de l\'upload');
+      }
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await profiles.update(user.id, {
+        avatar_url: publicUrl,
+      });
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setAvatarUrl(publicUrl);
+      Alert.alert('Succès', 'Photo de profil mise à jour');
+    } catch (error) {
+      console.error('Avatar change error:', error);
+      Alert.alert(
+        'Erreur',
+        error instanceof Error ? error.message : 'Impossible de changer la photo'
+      );
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
   const handleSignOut = () => {
     Alert.alert(
       'Déconnexion',
@@ -107,8 +169,16 @@ export default function ProfileScreen() {
           </View>
         )}
 
-        <TouchableOpacity style={styles.changeAvatarButton}>
-          <Text style={styles.changeAvatarText}>Changer la photo</Text>
+        <TouchableOpacity
+          style={styles.changeAvatarButton}
+          onPress={handleChangeAvatar}
+          disabled={uploadingAvatar}
+        >
+          {uploadingAvatar ? (
+            <ActivityIndicator size="small" color="#FF6B35" />
+          ) : (
+            <Text style={styles.changeAvatarText}>Changer la photo</Text>
+          )}
         </TouchableOpacity>
       </View>
 
@@ -165,12 +235,18 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.section}>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/settings')}
+        >
           <Text style={styles.menuItemText}>Paramètres</Text>
           <Text style={styles.menuItemIcon}>›</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push('/settings')}
+        >
           <Text style={styles.menuItemText}>Notifications</Text>
           <Text style={styles.menuItemIcon}>›</Text>
         </TouchableOpacity>

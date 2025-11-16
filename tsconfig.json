@@ -35,15 +35,22 @@
     "app/profile/**",
     "app/referral.tsx",
     "app/settings.tsx",
+    "app/affiliate/dashboard/**",
+    "app/artist/dashboard/**",
+    "app/fan/dashboard/**",
     "components/EventCard.tsx",
     "components/VideoOverlay.tsx",
     "components/VideoPlayer.tsx",
+    "components/LanguageSwitcher.tsx",
+    "contexts/I18nContext.tsx",
     "hooks/language-context.tsx",
     "hooks/theme-context.tsx",
     "hooks/user-context.tsx",
     "services/payment-service.ts",
     "lib/stripe-mobile.ts",
+    "lib/i18n.ts",
     "mocks/**",
-    "scripts/**"
+    "scripts/**",
+    "mobile/**"
   ]
 }

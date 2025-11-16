@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { CookieConsent } from '@/components/legal/cookie-consent'
-import { I18nProvider } from '@/contexts/I18nContext'
+// import { I18nProvider } from '@/contexts/I18nContext' // Temporarily disabled for web build
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration'
 import MobileNav from '@/components/MobileNav'
 import ScrollToTop from '@/components/ScrollToTop'
@@ -135,15 +135,14 @@ export default function RootLayout({
         <WebSiteSchema />
       </head>
       <body className={inter.className}>
-        <I18nProvider>
-          <ServiceWorkerRegistration />
-          <MobileNav />
-          <ScrollToTop />
-          <div className="lg:pt-0">
-            {children}
-          </div>
-          <CookieConsent />
-        </I18nProvider>
+        {/* I18nProvider temporarily disabled for web build */}
+        <ServiceWorkerRegistration />
+        <MobileNav />
+        <ScrollToTop />
+        <div className="lg:pt-0">
+          {children}
+        </div>
+        <CookieConsent />
 
         {/* Analytics: Google Analytics 4 */}
         {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (

@@ -17,6 +17,24 @@ const nextConfig = {
     },
     instrumentationHook: true, // Enable instrumentation.ts
   },
+  // Exclude mobile-specific pages from web build
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || []
+      config.externals.push({
+        '@/contexts/I18nContext': 'commonjs @/contexts/I18nContext',
+        '@/components/LanguageSwitcher': 'commonjs @/components/LanguageSwitcher',
+      })
+    }
+    return config
+  },
+  // Ignore build errors for mobile-only pages
+  typescript: {
+    ignoreBuildErrors: false,
+  },
+  eslint: {
+    ignoreDuringBuilds: false,
+  },
 }
 
 // Sentry configuration

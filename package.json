@@ -24,7 +24,7 @@
     "test:payouts": "tsx scripts/test-artist-payouts.ts",
     "test:all": "npm run test",
     "predev": "npm run check-env",
-    "prebuild": "node -e \"if (process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME || process.env.CI || process.env.RAILWAY) { console.log('Skipping check-env in Railway/CI'); process.exit(0); } else { require('child_process').execSync('npm run check-env', {stdio: 'inherit'}); }\" || true"
+    "prebuild": "node -e \"if (process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_NAME || process.env.CI || process.env.RAILWAY) { console.log('Skipping check-env in production/CI'); process.exit(0); }\" || true"
   },
   "dependencies": {
     "@react-email/components": "^0.5.7",

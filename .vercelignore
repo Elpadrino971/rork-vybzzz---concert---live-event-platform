@@ -1,11 +1,3 @@
-# Vercel Ignore - Minimal Configuration
-
-# Exclude mobile app (deployed separately via EAS)
+# Exclude only mobile and backend
 mobile/
-
-# Exclude backend (deployed on Railway)
 backend/
-
-# Exclude documentation
-*.md
-!README.md

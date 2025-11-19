@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    locale: 'fr_FR',
-    alternateLocale: ['en_US', 'es_ES', 'pt_BR', 'de_DE', 'zh_CN'],
+    locale: 'en_US',
+    alternateLocale: ['fr_FR', 'es_ES', 'pt_BR', 'de_DE', 'ja_JP', 'zh_CN'],
     url: 'https://vybzzz.com',
     siteName: 'VyBzzZ',
     title: 'VyBzzZ - Live Concert Streaming Platform',
@@ -92,11 +92,12 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://vybzzz.com',
     languages: {
-      'fr': 'https://vybzzz.com/fr',
       'en': 'https://vybzzz.com/en',
+      'fr': 'https://vybzzz.com/fr',
       'es': 'https://vybzzz.com/es',
       'pt': 'https://vybzzz.com/pt',
       'de': 'https://vybzzz.com/de',
+      'ja': 'https://vybzzz.com/ja',
       'zh': 'https://vybzzz.com/zh',
     },
   },
@@ -113,7 +114,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="fr">
+    <html lang="en">
       <head>
         {/* Performance: Preconnect to external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />

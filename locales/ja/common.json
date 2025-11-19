@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "discover": "発見",
+    "events": "イベント",
+    "artists": "アーティスト",
+    "tickets": "チケット",
+    "profile": "プロフィール",
+    "settings": "設定",
+    "dashboard": "ダッシュボード"
+  },
+  "actions": {
+    "back": "戻る",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "view": "表示",
+    "create": "作成",
+    "search": "検索",
+    "filter": "フィルター",
+    "export": "エクスポート",
+    "copy": "コピー",
+    "share": "共有",
+    "close": "閉じる",
+    "submit": "送信",
+    "confirm": "確認"
+  },
+  "states": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "noData": "データなし",
+    "empty": "空"
+  },
+  "time": {
+    "today": "今日",
+    "yesterday": "昨日",
+    "tomorrow": "明日",
+    "thisWeek": "今週",
+    "thisMonth": "今月",
+    "thisYear": "今年"
+  },
+  "currency": {
+    "symbol": "€",
+    "format": "€{{amount}}"
+  }
+}

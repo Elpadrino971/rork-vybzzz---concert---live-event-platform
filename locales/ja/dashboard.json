@@ -1,0 +1,120 @@
+{
+  "artist": {
+    "title": "アーティストダッシュボード",
+    "welcome": "ようこそ、{{name}}さん",
+    "createEvent": "イベント作成",
+    "stats": {
+      "totalEvents": "総イベント数",
+      "ticketsSold": "販売チケット",
+      "totalRevenue": "総収益",
+      "stripeStatus": "Stripeステータス"
+    },
+    "stripeConnect": {
+      "complete": "接続済み",
+      "incomplete": "設定が必要",
+      "setup": "Stripe Connectを設定"
+    },
+    "events": {
+      "title": "マイイベント",
+      "noEvents": "イベントが作成されていません",
+      "status": {
+        "live": "ライブ中",
+        "scheduled": "予定済み",
+        "draft": "下書き",
+        "ended": "終了",
+        "cancelled": "キャンセル"
+      },
+      "attendees": "{{count}}名参加",
+      "price": "チケット価格"
+    },
+    "analytics": {
+      "title": "分析",
+      "revenue": "収益",
+      "artistShare": "アーティスト分配",
+      "platformShare": "プラットフォーム分配",
+      "tips": "チップ",
+      "payouts": "支払い",
+      "nextPayout": "次回支払い",
+      "lastPayout": "前回支払い"
+    }
+  },
+  "affiliate": {
+    "title": "ビジネス紹介者ダッシュボード",
+    "subtitle": "3段階アフィリエイトプログラム",
+    "description": "ユーザー紹介でチケット販売手数料を獲得",
+    "referralCode": {
+      "title": "あなたの紹介コード",
+      "code": "コード",
+      "copied": "コードがコピーされました！",
+      "share": "このコードを連絡先と共有して手数料を獲得",
+      "motivation": "あなたのコードで購入されたチケットごとに手数料が発生します！"
+    },
+    "stats": {
+      "level": "レベル",
+      "totalReferrals": "総紹介数",
+      "pendingEarnings": "保留中の収益",
+      "paidEarnings": "支払済み収益"
+    },
+    "commissionRates": {
+      "title": "手数料率",
+      "level1": "レベル1（直接）",
+      "level2": "レベル2（サブ紹介）",
+      "level3": "レベル3（サブサブ紹介）",
+      "rate": "チケット1枚あたり{{rate}}%"
+    },
+    "recentReferrals": {
+      "title": "最近の紹介",
+      "user": "ユーザー",
+      "event": "イベント",
+      "amount": "金額",
+      "date": "日付",
+      "noReferrals": "まだ紹介がありません"
+    }
+  },
+  "fan": {
+    "title": "マイスペース",
+    "welcome": "ようこそ、{{name}}さん",
+    "stats": {
+      "upcomingEvents": "今後のイベント",
+      "pastEvents": "過去のイベント",
+      "followedArtists": "フォロー中のアーティスト",
+      "totalSpent": "総支出"
+    },
+    "upcomingTickets": {
+      "title": "今後のチケット",
+      "noTickets": "今後のチケットがありません",
+      "viewTicket": "チケット表示",
+      "eventDate": "イベント日"
+    },
+    "pastTickets": {
+      "title": "過去のイベント",
+      "noPastTickets": "過去のイベントがありません",
+      "attended": "{{date}}に参加"
+    },
+    "followedArtists": {
+      "title": "フォロー中のアーティスト",
+      "noArtists": "アーティストをフォローしていません",
+      "followers": "{{count}}人のフォロワー",
+      "unfollow": "フォロー解除"
+    },
+    "spending": {
+      "title": "支出履歴",
+      "tickets": "チケット",
+      "tips": "チップ",
+      "total": "合計"
+    },
+    "recentActivity": {
+      "title": "最近のアクティビティ",
+      "noActivity": "最近のアクティビティがありません"
+    }
+  },
+  "regional": {
+    "title": "地域マネージャーダッシュボード",
+    "stats": {
+      "ticketSales": "チケット販売",
+      "attendanceRate": "参加率",
+      "revenue": "収益",
+      "localArtists": "地域アーティスト"
+    }
+  }
+}

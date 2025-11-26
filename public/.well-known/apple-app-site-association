@@ -3,19 +3,21 @@
     "apps": [],
     "details": [
       {
-        "appID": "TEAM_ID.com.vybzzz.app",
+        "appID": "TEAM_ID.com.vybzzz.mobile",
         "paths": [
           "/events/*",
           "/event/*",
           "/artist/*",
+          "/ticket/*",
           "/profile/*",
-          "/fan/*",
-          "/affiliate/*"
+          "*"
         ]
       }
     ]
   },
   "webcredentials": {
-    "apps": ["TEAM_ID.com.vybzzz.app"]
+    "apps": [
+      "TEAM_ID.com.vybzzz.mobile"
+    ]
   }
 }

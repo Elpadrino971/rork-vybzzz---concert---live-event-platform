@@ -24,6 +24,10 @@
         "NSPhotoLibraryUsageDescription": "VyBzzZ a besoin d'accéder à vos photos pour définir votre photo de profil.",
         "NSMicrophoneUsageDescription": "VyBzzZ a besoin d'accéder à votre microphone pour les fonctionnalités de chat vocal."
       },
+      "associatedDomains": [
+        "applinks:vybzzz.com",
+        "applinks:www.vybzzz.com"
+      ],
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -40,6 +44,26 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "NOTIFICATIONS"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "vybzzz.com"
+            },
+            {
+              "scheme": "https",
+              "host": "www.vybzzz.com"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
       ]
     },
     "web": {

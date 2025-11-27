@@ -1,0 +1,38 @@
+{
+  "name": "vybzzz-v1-mvp",
+  "version": "1.0.0",
+  "description": "VyBzzZ V1.0 MVP - Plateforme de concerts en direct",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "@supabase/ssr": "^0.7.0",
+    "stripe": "^16.0.0",
+    "@stripe/stripe-js": "^4.10.0",
+    "@stripe/react-stripe-js": "^2.9.0",
+    "date-fns": "^3.6.0",
+    "zod": "^3.23.0",
+    "qrcode": "^1.5.3",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8",
+    "autoprefixer": "^10.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/qrcode": "^1.5.5",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.0"
+  }
+}

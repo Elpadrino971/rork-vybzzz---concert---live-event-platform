@@ -45,3 +45,8 @@ build/
 
 # Sentry
 .sentryclirc
+
+ios/
+android/
+.rork
+rork-eslint.config.js

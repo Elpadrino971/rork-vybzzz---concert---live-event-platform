@@ -1,70 +1,70 @@
 # Supabase Setup Guide for VyBzzZ
 
-Ce guide vous accompagne étape par étape pour configurer votre projet Supabase pour la plateforme VyBzzZ.
+Ce guide vous accompagne ï¿½tape par ï¿½tape pour configurer votre projet Supabase pour la plateforme VyBzzZ.
 
-## Prérequis
+## Prï¿½requis
 
 - Compte Supabase (gratuit) : [supabase.com](https://supabase.com)
-- Accès au SQL Editor dans Supabase
+- Accï¿½s au SQL Editor dans Supabase
 
-## Étape 1 : Créer un Projet Supabase
+## ï¿½tape 1 : Crï¿½er un Projet Supabase
 
 1. Allez sur [https://supabase.com/dashboard](https://supabase.com/dashboard)
 2. Cliquez sur **"New Project"**
 3. Remplissez les informations :
    - **Name** : `vybzzz-platform` (ou autre nom)
-   - **Database Password** : Générez un mot de passe fort (sauvegardez-le !)
+   - **Database Password** : Gï¿½nï¿½rez un mot de passe fort (sauvegardez-le !)
    - **Region** : Choisissez `Europe (Frankfurt)` ou proche de votre localisation
 4. Cliquez sur **"Create new project"**
-5. Attendez 1-2 minutes que le projet se crée
+5. Attendez 1-2 minutes que le projet se crï¿½e
 
-## Étape 2 : Exécuter le Schema SQL
+## ï¿½tape 2 : Exï¿½cuter le Schema SQL
 
-1. Une fois le projet créé, allez dans **SQL Editor** (menu latéral gauche)
+1. Une fois le projet crï¿½ï¿½, allez dans **SQL Editor** (menu latï¿½ral gauche)
 2. Cliquez sur **"New query"**
 3. Ouvrez le fichier `supabase/schema-complete.sql` de ce projet
 4. Copiez **TOUT le contenu** du fichier (1879 lignes)
-5. Collez le contenu dans l'éditeur Supabase
+5. Collez le contenu dans l'ï¿½diteur Supabase
 6. Cliquez sur **"Run"** (ou Ctrl+Enter)
-7. Attendez que l'exécution se termine (environ 10-15 secondes)
+7. Attendez que l'exï¿½cution se termine (environ 10-15 secondes)
 
 Vous devriez voir le message : **"Success. No rows returned"**
 
-## Étape 3 : Vérifier les Tables
+## ï¿½tape 3 : Vï¿½rifier les Tables
 
-1. Allez dans **Table Editor** (menu latéral gauche)
-2. Vous devriez voir toutes les tables créées :
+1. Allez dans **Table Editor** (menu latï¿½ral gauche)
+2. Vous devriez voir toutes les tables crï¿½ï¿½es :
 
 ### Tables Principales
 - `users` - Comptes utilisateurs
 - `profiles` - Profils utilisateurs
 - `artists` - Profils artistes
-- `events` - Événements/Concerts
-- `tickets` - Billets achetés
+- `events` - ï¿½vï¿½nements/Concerts
+- `tickets` - Billets achetï¿½s
 - `tips` - Pourboires aux artistes
 
 ### Tables d'Affiliation
 - `apporteurs` - Apporteurs d'Affaires (AA)
-- `responsables_regionaux` - Responsables Régionaux (RR)
+- `responsables_regionaux` - Responsables Rï¿½gionaux (RR)
 - `commissions` - Commissions AA/RR
 - `payouts` - Paiements aux artistes (J+21)
 
 ### Tables de Gamification
 - `badges` - Badges disponibles
-- `user_badges` - Badges gagnés
-- `quests` - Quêtes/Défis
-- `user_quests` - Progression des quêtes
+- `user_badges` - Badges gagnï¿½s
+- `quests` - Quï¿½tes/Dï¿½fis
+- `user_quests` - Progression des quï¿½tes
 - `miles_transactions` - Transactions de miles
 
 ### Tables de Contenu
-- `shorts` - Highlights vidéo (TikTok-style)
+- `shorts` - Highlights vidï¿½o (TikTok-style)
 - `short_likes` - Likes sur les shorts
 - `artist_followers` - Abonnements aux artistes
 - `event_chat_messages` - Messages de chat en direct
 
-## Étape 4 : Récupérer les Credentials
+## ï¿½tape 4 : Rï¿½cupï¿½rer les Credentials
 
-1. Allez dans **Settings** ’ **API** (menu latéral gauche)
+1. Allez dans **Settings** ï¿½ **API** (menu latï¿½ral gauche)
 2. Copiez ces 3 valeurs :
 
 ### Project URL
@@ -82,15 +82,15 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 Copiez cette valeur pour `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 #### service_role secret
-  **ATTENTION** : Cette clé doit rester SECRÈTE !
+ï¿½ **ATTENTION** : Cette clï¿½ doit rester SECRï¿½TE !
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 Copiez cette valeur pour `SUPABASE_SERVICE_ROLE_KEY`
 
-## Étape 5 : Configurer les Variables d'Environnement
+## ï¿½tape 5 : Configurer les Variables d'Environnement
 
-1. Dans votre projet VyBzzZ, créez le fichier `.env.local` :
+1. Dans votre projet VyBzzZ, crï¿½ez le fichier `.env.local` :
 
 ```bash
 cp .env.example .env.local
@@ -105,14 +105,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_anon_key_ici
 SUPABASE_SERVICE_ROLE_KEY=votre_service_role_key_ici
 ```
 
-## Étape 6 : Activer l'Authentification
+## ï¿½tape 6 : Activer l'Authentification
 
-1. Allez dans **Authentication** ’ **Providers**
+1. Allez dans **Authentication** ï¿½ **Providers**
 2. Activez les providers dont vous avez besoin :
 
 ### Email
--  Activé par défaut
-- **Confirm email** : Désactivé pour le développement, activé pour la production
+-  Activï¿½ par dï¿½faut
+- **Confirm email** : Dï¿½sactivï¿½ pour le dï¿½veloppement, activï¿½ pour la production
 
 ### Google (Optionnel)
 - **Client ID** : Obtenez-le depuis Google Cloud Console
@@ -121,12 +121,12 @@ SUPABASE_SERVICE_ROLE_KEY=votre_service_role_key_ici
 ### Apple (Optionnel)
 - Pour l'authentification iOS
 
-## Étape 7 : Configurer le Storage (Optionnel)
+## ï¿½tape 7 : Configurer le Storage (Optionnel)
 
-Pour stocker les images (avatars, bannières, thumbnails) :
+Pour stocker les images (avatars, banniï¿½res, thumbnails) :
 
-1. Allez dans **Storage** (menu latéral gauche)
-2. Créez les buckets suivants :
+1. Allez dans **Storage** (menu latï¿½ral gauche)
+2. Crï¿½ez les buckets suivants :
 
 ### Bucket `avatars`
 - **Public** :  Yes
@@ -143,34 +143,34 @@ Pour stocker les images (avatars, bannières, thumbnails) :
 - **File size limit** : 50 MB
 - **Allowed MIME types** : `video/mp4, video/webm`
 
-## Étape 8 : Configurer Realtime (Chat en Direct)
+## ï¿½tape 8 : Configurer Realtime (Chat en Direct)
 
-1. Allez dans **Database** ’ **Replication**
-2. Activez la réplication pour la table `event_chat_messages` :
-   - Cliquez sur le toggle à côté de `event_chat_messages`
-   - Cela permet le chat en temps réel pendant les concerts
+1. Allez dans **Database** ï¿½ **Replication**
+2. Activez la rï¿½plication pour la table `event_chat_messages` :
+   - Cliquez sur le toggle ï¿½ cï¿½tï¿½ de `event_chat_messages`
+   - Cela permet le chat en temps rï¿½el pendant les concerts
 
-## Étape 9 : Vérifier Row Level Security (RLS)
+## ï¿½tape 9 : Vï¿½rifier Row Level Security (RLS)
 
-Toutes les tables ont déjà les policies RLS configurées par le script SQL.
+Toutes les tables ont dï¿½jï¿½ les policies RLS configurï¿½es par le script SQL.
 
-Pour vérifier :
-1. Allez dans **Authentication** ’ **Policies**
+Pour vï¿½rifier :
+1. Allez dans **Authentication** ï¿½ **Policies**
 2. Vous devriez voir les policies pour chaque table
 3. Exemples de policies :
    - `Users can view own profile`
    - `Artists can manage their events`
    - `Public can view published events`
 
-## Étape 10 : Tester la Connexion
+## ï¿½tape 10 : Tester la Connexion
 
-1. Lancez votre serveur de développement :
+1. Lancez votre serveur de dï¿½veloppement :
 
 ```bash
 npm run dev
 ```
 
-2. L'application devrait se connecter à Supabase sans erreur
+2. L'application devrait se connecter ï¿½ Supabase sans erreur
 
 3. Test rapide dans le navigateur :
 
@@ -182,40 +182,40 @@ const supabase = createClient(
   'VOTRE_ANON_KEY'
 )
 
-// Tester une requête simple
+// Tester une requï¿½te simple
 const { data } = await supabase.from('events').select('*').limit(5)
 console.log(data)
 ```
 
-## Étape 11 : Créer un Utilisateur Test (Optionnel)
+## ï¿½tape 11 : Crï¿½er un Utilisateur Test (Optionnel)
 
-Pour tester l'application, créez un compte :
+Pour tester l'application, crï¿½ez un compte :
 
-1. Allez dans **Authentication** ’ **Users**
-2. Cliquez sur **"Add user"** ’ **"Create new user"**
+1. Allez dans **Authentication** ï¿½ **Users**
+2. Cliquez sur **"Add user"** ï¿½ **"Create new user"**
 3. Remplissez :
    - **Email** : `test@vybzzz.com`
    - **Password** : `Test123!` (ou autre)
-   - **Auto Confirm User** :  Yes (pour éviter la vérification email)
+   - **Auto Confirm User** :  Yes (pour ï¿½viter la vï¿½rification email)
 4. Cliquez sur **"Create user"**
 
-## Dépannage
+## Dï¿½pannage
 
 ### Erreur : "relation does not exist"
-- **Cause** : Le schema SQL n'a pas été exécuté correctement
-- **Solution** : Réexécutez le fichier `schema-complete.sql` complet
+- **Cause** : Le schema SQL n'a pas ï¿½tï¿½ exï¿½cutï¿½ correctement
+- **Solution** : Rï¿½exï¿½cutez le fichier `schema-complete.sql` complet
 
 ### Erreur : "JWT expired"
-- **Cause** : Les tokens Supabase ont expiré
-- **Solution** : Rechargez les credentials depuis Settings ’ API
+- **Cause** : Les tokens Supabase ont expirï¿½
+- **Solution** : Rechargez les credentials depuis Settings ï¿½ API
 
 ### Erreur : "permission denied for table"
-- **Cause** : Problème avec Row Level Security
-- **Solution** : Vérifiez que vous êtes authentifié avec le bon user_type
+- **Cause** : Problï¿½me avec Row Level Security
+- **Solution** : Vï¿½rifiez que vous ï¿½tes authentifiï¿½ avec le bon user_type
 
 ### Erreur de connexion
-- **Cause** : URL ou clés incorrectes
-- **Solution** : Vérifiez vos variables d'environnement dans `.env.local`
+- **Cause** : URL ou clï¿½s incorrectes
+- **Solution** : Vï¿½rifiez vos variables d'environnement dans `.env.local`
 
 ## Limites du Plan Gratuit
 
@@ -230,18 +230,18 @@ Supabase Free Tier offre :
 - Tests
 - **Concert David Guetta** (avec quelques milliers d'utilisateurs)
 
-Pour la production à grande échelle, envisagez :
+Pour la production ï¿½ grande ï¿½chelle, envisagez :
 - **Pro Plan** (25$/mois) : 8 GB Database, 100 GB Storage
 - **Team Plan** (599$/mois) : Pour >100K users
 
-## Prochaines Étapes
+## Prochaines ï¿½tapes
 
-Une fois Supabase configuré :
+Une fois Supabase configurï¿½ :
 
 1.  Configurez Stripe (voir README.md)
-2.  Déployez sur Vercel
+2.  Dï¿½ployez sur Vercel
 3.  Testez l'application mobile
-4.  Préparez l'événement David Guetta
+4.  Prï¿½parez l'ï¿½vï¿½nement David Guetta
 
 ## Ressources
 
@@ -259,6 +259,6 @@ Pour toute question sur la configuration Supabase :
 
 ---
 
-**Temps estimé pour la configuration complète : 15-20 minutes**
+**Temps estimï¿½ pour la configuration complï¿½te : 15-20 minutes**
 
- Une fois terminé, votre backend Supabase est prêt pour VyBzzZ !
+ Une fois terminï¿½, votre backend Supabase est prï¿½t pour VyBzzZ !

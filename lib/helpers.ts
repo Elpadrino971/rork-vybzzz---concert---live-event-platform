@@ -90,7 +90,7 @@ export function formatRelativeTime(date: Date | string): string {
   const diffHours = Math.floor(diffMins / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffSecs < 60) return 'à l\'instant'
+  if (diffSecs < 60) return 'ï¿½ l\'instant'
   if (diffMins < 60) return `il y a ${diffMins} minute${diffMins > 1 ? 's' : ''}`
   if (diffHours < 24) return `il y a ${diffHours} heure${diffHours > 1 ? 's' : ''}`
   if (diffDays < 7) return `il y a ${diffDays} jour${diffDays > 1 ? 's' : ''}`
@@ -105,7 +105,7 @@ export function getTimeUntilEvent(eventDate: Date | string): string {
   const now = new Date()
   const diffMs = d.getTime() - now.getTime()
 
-  if (diffMs < 0) return 'Événement passé'
+  if (diffMs < 0) return 'ï¿½vï¿½nement passï¿½'
 
   const diffMins = Math.floor(diffMs / 1000 / 60)
   const diffHours = Math.floor(diffMins / 60)
@@ -114,7 +114,7 @@ export function getTimeUntilEvent(eventDate: Date | string): string {
   if (diffDays > 0) return `Dans ${diffDays} jour${diffDays > 1 ? 's' : ''}`
   if (diffHours > 0) return `Dans ${diffHours} heure${diffHours > 1 ? 's' : ''}`
   if (diffMins > 0) return `Dans ${diffMins} minute${diffMins > 1 ? 's' : ''}`
-  return 'Bientôt'
+  return 'Bientï¿½t'
 }
 
 /**
